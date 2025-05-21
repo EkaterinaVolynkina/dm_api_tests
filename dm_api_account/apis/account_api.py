@@ -42,3 +42,25 @@ class AccountApi:
             headers=headers
         )
         return response
+
+    def put_v1_account_email(
+            self,
+            json_data,
+            token: str,
+    ):
+        """
+        Change registered user email
+        """
+        headers = {
+            'accept': 'text/plain',
+            'Content-Type': 'application/json',
+            'X-Dm-Auth-Token': token,  # используем переданный токен
+        }
+
+        return requests.put(
+            url=f'{self.host}/v1/account/email',
+            headers=headers,
+            json=json_data
+        )
+
+
