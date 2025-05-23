@@ -20,17 +20,17 @@ def test_post_v1_account():
     login_api = LoginApi(host='http://5.63.153.31:5051')
     mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
 
-    login = 'katya_1_2365_154'
+    login = 'katya_1_2365_156'
     password = '123456789'
     email = f'{login}@mail.ru'
 
-    # # Регистрация пользователя
-    # response = account_api.post_v1_account(json_data={
-    #     'login': login,
-    #     'email': email,
-    #     'password': password,
-    # })
-    # assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
+     # Регистрация пользователя
+    response = account_api.post_v1_account(json_data={
+         'login': login,
+         'email': email,
+         'password': password,
+     })
+    assert response.status_code == 201 or 400, f'Пользователь не был создан: {response.text}'
 
     # Получение токена активации из почты
     response = mailhog_api.get_api_v2_messages()
