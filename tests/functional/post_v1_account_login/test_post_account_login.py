@@ -4,6 +4,8 @@ from dm_api_account.apis.login_api import LoginApi
 from api_mailhog.apis.mailhog_api import MailhogApi
 from data import generate_user
 import structlog
+from restclient.configuration import Configuration as DmApiConfiguration
+from restclient.configuration import Configuration as MailHogConfiguration
 
 structlog.configure(
     processors=[
@@ -17,9 +19,12 @@ structlog.configure(
 
 def test_post_v1_account():
     # Инициализация клиентов
-    account_api = AccountApi(host='http://5.63.153.31:5051')
-    login_api = LoginApi(host='http://5.63.153.31:5051')
-    mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
+    dm_api_configuration = DmApiConfiguration(host='http://5.63.153.31:5051', disable_log=False)
+    mailhog_configuration = MailHogConfiguration(host='http://5.63.153.31:5025')
+
+    account_api = AccountApi(configuration=dm_api_configuration)
+    login_api = LoginApi(configuration=dm_api_configuration)
+    mailhog_api = MailhogApi(configuration=mailhog_configuration)
 
     login, email, password = generate_user()
 
