@@ -2,7 +2,7 @@ from json import loads
 from dm_api_account.apis.account_api import AccountApi
 from dm_api_account.apis.login_api import LoginApi
 from api_mailhog.apis.mailhog_api import MailhogApi
-from data import USER, EMAIL, PASSWORD
+from data import generate_user
 import structlog
 
 structlog.configure(
@@ -21,9 +21,7 @@ def test_post_v1_account():
     login_api = LoginApi(host='http://5.63.153.31:5051')
     mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
 
-    login = USER
-    password = PASSWORD
-    email = EMAIL
+    login, email, password = generate_user()
 
     #  Регистрация пользователя
     response = account_api.post_v1_account(json_data={

@@ -1,5 +1,5 @@
 from dm_api_account.apis.account_api import AccountApi
-from data import USER, EMAIL, PASSWORD
+from data import generate_user
 import structlog
 
 structlog.configure(
@@ -16,9 +16,7 @@ def test_post_v1_account():
     # Инициализация клиентов
     account_api = AccountApi(host='http://5.63.153.31:5051')
 
-    login = USER
-    password = PASSWORD
-    email = EMAIL
+    login, email, password = generate_user()
 
     # Регистрация пользователя
     response = account_api.post_v1_account(json_data={

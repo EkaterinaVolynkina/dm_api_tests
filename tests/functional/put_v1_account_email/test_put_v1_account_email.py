@@ -3,7 +3,7 @@ from json import loads
 from dm_api_account.apis.account_api import AccountApi
 from dm_api_account.apis.login_api import LoginApi
 from api_mailhog.apis.mailhog_api import MailhogApi
-from data import USER, EMAIL, PASSWORD
+from data import generate_user
 import structlog
 
 structlog.configure(
@@ -24,23 +24,22 @@ def test_post_v1_account_email():
 
 
     # Генерируем уникальный логин
-    login = USER
-    password = PASSWORD
+    login, email, password = generate_user()
     unique_suffix = uuid.uuid4().hex[:6]
-    new_login = f'{USER}_{unique_suffix}'
+    new_login = f'{login}_{unique_suffix}'
 
     # Убеждаемся, что новый логин точно не равен старому
     while new_login == login:
         unique_suffix = uuid.uuid4().hex[:6]
-        new_login = f'{USER}_{unique_suffix}'
+        new_login = f'{login}_{unique_suffix}'
 
     new_email = f'{new_login}@mail.ru'
 
     # Регистрация пользователя
     response = account_api.post_v1_account(json_data={
-        'login': USER,
-        'email': EMAIL,
-        'password': PASSWORD,
+        'login': login,
+        'email': email,
+        'password': password,
     })
     assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
 

@@ -1,6 +1,8 @@
 import uuid
 
-USER = f'katya_1_{uuid.uuid4().hex[:6]}'
-EMAIL = f'{USER}@example.com'
-PASSWORD = 'Qwerty123!'
+def generate_user():
+    user = f'katya_1_{uuid.uuid4().hex[:6]}'
+    email = f'{user}@example.com'
+    password = 'Qwerty123!'
+    return user, email, password
 
