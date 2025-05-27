@@ -3,8 +3,14 @@ import time
 from json import loads
 from services.dm_api_account import DMApiAccount
 from services.api_mailhog import MailHogApi
+from retrying import retry
 
 
+def retry_if_result_none(
+        result
+        ):
+    """Return True if we should retry (in this case when result is None), False otherwise"""
+    return result is None
 def retrier(
         function
         ):
@@ -69,7 +75,7 @@ class AccountHelper:
         assert token, 'Токен авторизации не получен'
         return token
 
-    @retrier
+    @retry(stop_max_attempt_number=5, retry_on_result=retry_if_result_none, wait_fixed=1000)
     def get_activation_token_by_login(
             self,
             login
