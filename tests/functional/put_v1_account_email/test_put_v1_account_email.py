@@ -1,4 +1,5 @@
 import uuid
+import pytest
 from data import generate_user
 from helpers.account_helper import AccountHelper
 from restclient.configuration import Configuration as DmApiConfiguration
@@ -17,18 +18,25 @@ structlog.configure(
     ]
 )
 
-def test_post_v1_account_email():
-    # Инициализация клиентов
-    dm_api_configuration = DmApiConfiguration(host='http://5.63.153.31:5051', disable_log=False)
+@pytest.fixture
+def mailhog_api():
     mailhog_configuration = MailHogConfiguration(host='http://5.63.153.31:5025')
+    mailhog_client = MailHogApi(configuration=mailhog_configuration)
+    return mailhog_client
 
+@pytest.fixture
+def account_api():
+    dm_api_configuration = DmApiConfiguration(host='http://5.63.153.31:5051', disable_log=False)
     account = DMApiAccount(configuration=dm_api_configuration)
-    mailhog = MailHogApi(configuration=mailhog_configuration)
+    return account
 
-    account_helper = AccountHelper(dm_account_api=account, mailhog=mailhog)
+@pytest.fixture
+def account_helper(account_api, mailhog_api):
+    account_helper = AccountHelper(dm_account_api=account_api, mailhog=mailhog_api)
+    return account_helper
 
-
-    # Генерируем уникальный логин
+def test_post_v1_account_email(account_helper, account_api):
+       # Генерируем уникальный логин
     login, email, password = generate_user()
     unique_suffix = uuid.uuid4().hex[:6]
     new_login = f'{login}_{unique_suffix}'
@@ -49,17 +57,17 @@ def test_post_v1_account_email():
         'password': password,
         'email': new_email,
     }
-    response = account.account_api.put_v1_account_email(json_data=json_data, headers=token)
+    response = account_api.account_api.put_v1_account_email(json_data=json_data, headers=token)
     assert response.status_code == 200, f'Не удалось отправить запрос на смену email: {response.text}'
 
     # Обновляем список писем после запроса
-    response = mailhog.mailhog_api.get_api_v2_messages()
+    response = account_helper.mailhog.mailhog_api.get_api_v2_messages()
     assert response.status_code == 200, "Письма не были получены после смены email"
 
     # Подтверждение нового email
     new_token = account_helper.get_activation_token_by_login(login=login)
     assert new_token, 'Не найден токен активации для нового email'
-    response = account.account_api.put_v1_account_token(token=new_token)
+    response = account_api.account_api.put_v1_account_token(token=new_token)
     assert response.status_code == 200, 'Подтверждение нового email не удалось'
 
     # Авторизация с новым email

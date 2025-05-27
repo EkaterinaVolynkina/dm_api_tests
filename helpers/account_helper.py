@@ -75,18 +75,45 @@ class AccountHelper:
         assert token, 'Токен авторизации не получен'
         return token
 
-    @retry(stop_max_attempt_number=5, retry_on_result=retry_if_result_none, wait_fixed=1000)
+    # @retry(stop_max_attempt_number=5, retry_on_result=retry_if_result_none, wait_fixed=1000)
+    # def get_activation_token_by_login(
+    #         self,
+    #         login
+    # ):
+    #     token = None
+    #     time.sleep(3)
+    #     response = self.mailhog.mailhog_api.get_api_v2_messages()
+    #     assert response.status_code == 200, "Письма не были получены"
+    #     for item in response.json()['items']:
+    #         user_data = loads(item['Content']['Body'])
+    #         user_login = user_data['Login']
+    #         if user_login == login:
+    #             token = user_data['ConfirmationLinkUrl'].split('/')[-1]
+    #     return token
+
+    @retry(
+        stop_max_attempt_number=5, retry_on_result=lambda
+                x: x is None, wait_fixed=2000
+        )
     def get_activation_token_by_login(
             self,
             login
-    ):
-        token = None
-        time.sleep(3)
+            ):
+        time.sleep(3)  # Дадим почтовому сервису немного времени
+
         response = self.mailhog.mailhog_api.get_api_v2_messages()
-        assert response.status_code == 200, "Письма не были получены"
+        assert response.status_code == 200, "Не удалось получить письма"
+
         for item in response.json()['items']:
-            user_data = loads(item['Content']['Body'])
-            user_login = user_data['Login']
-            if user_login == login:
-                token = user_data['ConfirmationLinkUrl'].split('/')[-1]
-        return token
+            body = item['Content']['Body']
+            print(f"\n📨 Письмо:\n{body}\n")
+
+            # Найдём токен (UUID) через регулярку
+            match = re.search(r'([a-f0-9\-]{36})', body)
+            if match and login in body:
+                token = match.group(1)
+                print(f"🔑 Токен найден: {token}")
+                return token
+
+        print("⚠️ Письмо с нужным логином не найдено.")
+        return None
