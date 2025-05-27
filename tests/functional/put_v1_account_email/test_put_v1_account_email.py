@@ -57,7 +57,7 @@ def test_post_v1_account_email():
     assert response.status_code == 200, "Письма не были получены после смены email"
 
     # Подтверждение нового email
-    new_token = account_helper.get_activation_token_by_login(login=login, response=response)
+    new_token = account_helper.get_activation_token_by_login(login=login)
     assert new_token, 'Не найден токен активации для нового email'
     response = account.account_api.put_v1_account_token(token=new_token)
     assert response.status_code == 200, 'Подтверждение нового email не удалось'
