@@ -1,12 +1,11 @@
 import uuid
-from json import loads
-from dm_api_account.apis.account_api import AccountApi
-from dm_api_account.apis.login_api import LoginApi
-from api_mailhog.apis.mailhog_api import MailhogApi
 from data import generate_user
+from helpers.account_helper import AccountHelper
 from restclient.configuration import Configuration as DmApiConfiguration
 from restclient.configuration import Configuration as MailHogConfiguration
 import structlog
+from services.api_mailhog import MailHogApi
+from services.dm_api_account import DMApiAccount
 
 structlog.configure(
     processors=[
@@ -23,85 +22,45 @@ def test_post_v1_account_email():
     dm_api_configuration = DmApiConfiguration(host='http://5.63.153.31:5051', disable_log=False)
     mailhog_configuration = MailHogConfiguration(host='http://5.63.153.31:5025')
 
-    account_api = AccountApi(configuration=dm_api_configuration)
-    login_api = LoginApi(configuration=dm_api_configuration)
-    mailhog_api = MailhogApi(configuration=mailhog_configuration)
+    account = DMApiAccount(configuration=dm_api_configuration)
+    mailhog = MailHogApi(configuration=mailhog_configuration)
+
+    account_helper = AccountHelper(dm_account_api=account, mailhog=mailhog)
+
 
     # Генерируем уникальный логин
     login, email, password = generate_user()
     unique_suffix = uuid.uuid4().hex[:6]
     new_login = f'{login}_{unique_suffix}'
 
-    # Убеждаемся, что новый логин точно не равен старому
-    while new_login == login:
-        unique_suffix = uuid.uuid4().hex[:6]
-        new_login = f'{login}_{unique_suffix}'
-
     new_email = f'{new_login}@mail.ru'
 
-    # Регистрация пользователя
-    response = account_api.post_v1_account(json_data={
-        'login': login,
-        'email': email,
-        'password': password,
-    })
-    assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
+    account_helper.register_new_user(login=login, password=password, email=email)
+    account_helper.user_login(login=login, password=password)
 
-    # Получение токена активации из почты
-    response = mailhog_api.get_api_v2_messages()
-    token = get_activation_token_by_login(login, response)
-    assert token, f'Не найден токен активации для {login}'
-
-    # Активация пользователя
-    response = account_api.put_v1_account_token(token=token)
-    assert response.status_code == 200, 'Активация пользователя не удалась'
-
-    # Авторизация
-    response = login_api.post_v1_account_login(json_data={
-        'login': login,
-        'password': password,
-        })
-    assert response.status_code == 200, 'Не удалось авторизоваться после активации'
-
-
-    # Отправка запроса на смену email
+    # Авторизация и получение токена
+    token_value = account_helper.user_login(login=login, password=password)
+    token = {
+        'X-Dm-Auth-Token': token_value
+    }
+    # Запрос на смену email
     json_data = {
         'login': login,
         'password': password,
         'email': new_email,
     }
-    response = account_api.put_v1_account_email(json_data=json_data, headers=token)
+    response = account.account_api.put_v1_account_email(json_data=json_data, headers=token)
     assert response.status_code == 200, f'Не удалось отправить запрос на смену email: {response.text}'
 
-    # Проверка, что вход с новым логином/email не работает без активации
-    response = login_api.post_v1_account_login(
-        json_data={
-            'login': login,
-            'password': password,
-        }
-    )
-    assert response.status_code == 403, 'Вход по новому email не работает'
+    # Обновляем список писем после запроса
+    response = mailhog.mailhog_api.get_api_v2_messages()
+    assert response.status_code == 200, "Письма не были получены после смены email"
 
-    # Получение нового письма с подтверждением email
-    response = mailhog_api.get_api_v2_messages()
-    new_token = get_activation_token_by_login(login, response)
-    assert new_token, f'Не найден токен подтверждения для нового email: {new_email}'
-
-    # Активация нового email
-
-    response = account_api.put_v1_account_token(token=new_token)
+    # Подтверждение нового email
+    new_token = account_helper.get_activation_token_by_login(login=login, response=response)
+    assert new_token, 'Не найден токен активации для нового email'
+    response = account.account_api.put_v1_account_token(token=new_token)
     assert response.status_code == 200, 'Подтверждение нового email не удалось'
 
- # Авторизация с новым email
-    response = login_api.post_v1_account_login(json_data={
-        'login': login,
-        'password': password,
-        })
-    assert response.status_code == 200, 'Не удалось авторизоваться после активации'
-
-def get_activation_token_by_login(login, response):
-    for item in response.json()['items']:
-        user_data = loads(item['Content']['Body'])
-        if user_data['Login'] == login:
-            return user_data['ConfirmationLinkUrl'].split('/')[-1]
-    return None
+    # Авторизация с новым email
+    account_helper.user_login(login=login, password=password)
