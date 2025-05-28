@@ -44,6 +44,7 @@ def test_post_v1_account_email():
     # Запрос на смену email
     # Обновляем список писем после запроса
     # Подтверждение нового email
+
     account_helper.change_mail(login=login, password=password, new_email=new_email)
 
     # Авторизация с новым email
