@@ -1,7 +1,9 @@
+
 def test_post_v1_account_token(
         account_helper,
         prepare_user
         ):
+  
     # Инициализация клиентов
     login = prepare_user.login
     password = prepare_user.password
