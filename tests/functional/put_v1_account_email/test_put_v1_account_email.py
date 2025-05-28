@@ -1,6 +1,6 @@
 import uuid
 from data import generate_user
-def test_post_v1_account_email(account_helper, account_api):
+def test_put_v1_account_email(account_helper, account_api):
        # Генерируем уникальный логин
     login, email, password = generate_user()
     unique_suffix = uuid.uuid4().hex[:6]
