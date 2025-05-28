@@ -1,4 +1,4 @@
-def test_post_v1_account(account_helper, prepare_user):
+def test_post_v1_account_login(account_helper, prepare_user):
     # Инициализация клиентов
 
     login = prepare_user.login
