@@ -1,4 +1,3 @@
-from json import loads
 from data import generate_user
 import structlog
 
