@@ -7,14 +7,16 @@ def test_post_v1_account_email(account_helper, account_api):
     new_login = f'{login}_{unique_suffix}'
 
     new_email = f'{new_login}@mail.ru'
+    # Регистрируем нового пользователя
 
     account_helper.register_new_user(login=login, password=password, email=email)
-    account_helper.user_login(login=login, password=password)
 
     # Авторизация и получение токена
     account_helper.user_login(login=login, password=password)
+
     # Запрос на смену email
     # Обновляем список писем после запроса
+   
     account_helper.change_mail(login=login, password=password, new_email=new_email)
 
     # Авторизация с новым email

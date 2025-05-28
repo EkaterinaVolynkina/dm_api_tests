@@ -68,6 +68,7 @@ class AccountHelper:
         assert token_headers, 'Токен авторизации не получен'
         return token_headers
 
+
     def change_mail(
             self,
             login: str,
