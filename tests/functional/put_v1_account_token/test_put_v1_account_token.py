@@ -1,4 +1,3 @@
-from json import loads
 from data import generate_user
 from helpers.account_helper import AccountHelper
 from restclient.configuration import Configuration as DmApiConfiguration

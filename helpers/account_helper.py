@@ -1,6 +1,4 @@
 import re
-import time
-from json import loads
 from services.dm_api_account import DMApiAccount
 from services.api_mailhog import MailHogApi
 from retrying import retry
@@ -71,9 +69,33 @@ class AccountHelper:
         }
         response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_data)
         assert response.status_code == 200, 'Не удалось авторизоваться после активации'
-        token = response.headers.get('X-Dm-Auth-Token')
-        assert token, 'Токен авторизации не получен'
-        return token
+        token_headers = {'X-Dm-Auth-Token': response.headers.get('X-Dm-Auth-Token')}
+        assert token_headers, 'Токен авторизации не получен'
+        return token_headers
+      
+    def change_mail(
+            self,
+            login: str,
+            password: str,
+            new_email: str
+    ):
+        # Запрос на смену email
+        json_data = {
+            'login': login,
+            'password': password,
+            'email': new_email,
+        }
+        response = self.dm_account_api.account_api.put_v1_account_email(json_data=json_data)
+        assert response.status_code == 200, f'Не удалось отправить запрос на смену email: {response.text}'
+
+        response = self.mailhog.mailhog_api.get_api_v2_messages()
+        assert response.status_code == 200, "Письма не были получены после смены email"
+
+        # Подтверждение нового email
+        new_token = self.get_activation_token_by_login(login=login, response=response)
+        assert new_token, 'Не найден токен активации для нового email'
+        response = self.dm_account_api.account_api.put_v1_account_token(token=new_token)
+        assert response.status_code == 200, 'Подтверждение нового email не удалось'
 
     @retry(stop_max_attempt_number=5, retry_on_result=retry_if_result_none, wait_fixed=1000)
     def get_activation_token_by_login(
