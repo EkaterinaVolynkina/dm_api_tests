@@ -18,6 +18,24 @@ class AccountApi(RestClient):
         )
         return response
 
+    def post_v1_account_password(
+            self,
+            json_data
+    ):
+        """
+        Reset registered user password
+        """
+
+        headers = {
+            'accept': 'text/plain',
+            'Content-Type': 'application/json',
+        }
+        return requests.post(
+            url=f'{self.host}/v1/account/password',
+            headers=headers,
+            json=json_data
+        )
+
     def get_v1_account(
             self,
             **kwargs
@@ -49,6 +67,31 @@ class AccountApi(RestClient):
         )
         return response
 
+    def put_v1_account_password(
+            self,
+            json_data,
+            token: str = None
+    ):
+        """
+        Change registered user password
+        :param json_data: dict with keys login, oldPassword, newPassword
+        :param token: X-Dm-Auth-Token string
+        """
+        headers = {
+            'accept': 'text/plain',
+            'Content-Type': 'application/json',
+        }
+
+        if token:
+            headers['X-Dm-Auth-Token'] = token
+
+        response = requests.put(
+            url=f'{self.host}/v1/account/password',
+            json=json_data,
+            headers=headers
+        )
+        return response
+
     def put_v1_account_email(
             self,
             json_data,
@@ -67,5 +110,4 @@ class AccountApi(RestClient):
             headers=kwargs.get('token'),
             json=json_data
         )
-
 
