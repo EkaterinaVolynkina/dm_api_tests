@@ -148,7 +148,7 @@ class AccountHelper:
             password: str,
             email: str
             ):
-        # 1. Регистрируем пользователя
+        # Регистрируем пользователя
         json_data = {
             'login': login,
             'password': password,
@@ -157,17 +157,17 @@ class AccountHelper:
         response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
         assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
 
-        # 2. Получаем письма с Mailhog и токен активации
+        # Получаем письма с Mailhog и токен активации
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, "Письма не были получены"
         token = self.get_activation_token_by_login(login=login, response=response)
         assert token, f'Не найден токен активации для {login}'
 
-        # 3. Активируем пользователя
+        # Активируем пользователя
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
         assert response.status_code == 200, 'Активация пользователя не удалась'
 
-        # 4. Логинимся и получаем токен
+        # Логинимся и получаем токен
         json_login = {
             'login': login,
             'password': password,
@@ -177,7 +177,7 @@ class AccountHelper:
         token = response.headers.get('X-Dm-Auth-Token')
         assert token, 'Токен авторизации не получен'
 
-        # 5. Выходим из аккаунта (удаляем сессию)
+        # Выходим из аккаунта
         response = self.dm_account_api.login_api.delete_v1_account_login(token=token)
         assert response.status_code == 204, f"Не удалось выйти из аккаунта: {response.text}"
 
@@ -188,7 +188,7 @@ class AccountHelper:
             password: str,
             email: str
     ):
-        # 1. Регистрируем пользователя
+        # Регистрируем пользователя
         json_data = {
             'login': login,
             'password': password,
@@ -197,17 +197,17 @@ class AccountHelper:
         response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
         assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
 
-        # 2. Получаем письма с Mailhog и токен активации
+        # Получаем письма с Mailhog и токен активации
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, "Письма не были получены"
         token = self.get_activation_token_by_login(login=login, response=response)
         assert token, f'Не найден токен активации для {login}'
 
-        # 3. Активируем пользователя
+        # Активируем пользователя
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
         assert response.status_code == 200, 'Активация пользователя не удалась'
 
-        # 4. Логинимся и получаем токен
+        # Логинимся и получаем токен
         json_login = {
             'login': login,
             'password': password,
@@ -217,7 +217,7 @@ class AccountHelper:
         token = response.headers.get('X-Dm-Auth-Token')
         assert token, 'Токен авторизации не получен'
 
-        # 5. Выходим из аккаунта (удаляем сессию)
+        # Выходим из аккаунта
         response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
         assert response.status_code == 204, f"Не удалось выйти из всех аккаунтов: {response.text}"
         print(response.status_code)
