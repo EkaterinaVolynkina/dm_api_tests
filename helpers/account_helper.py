@@ -1,4 +1,6 @@
 import re
+import time
+
 from services.dm_api_account import DMApiAccount
 from services.api_mailhog import MailHogApi
 
@@ -25,7 +27,10 @@ class AccountHelper:
         }
         response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
         assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
+        start_time = time.time()
         response = self.mailhog.mailhog_api.get_api_v2_messages()
+        end_time = time.time()
+        assert end_time - start_time < 3, 'Время ожидания активации превышено'
         assert response.status_code == 200, "Письма не были получены"
         token = self.get_activation_token_by_login(login=login, response=response)
         assert token, f'Не найден токен активации для {login}'
@@ -38,15 +43,8 @@ class AccountHelper:
             login: str,
             password: str
     ):
-        response = self.dm_account_api.login_api.post_v1_account_login(
-            json_data={
-                'login': login,
-                'password': password
-            }
-        )
-        token = {
-            'x-dm-auth-token': response.headers['x-dm-auth-token']
-        }
+        response = self.user_login(login=login, password=password)
+        token = {'x-dm-auth-token': response.headers['x-dm-auth-token']}
         self.dm_account_api.account_api.set_headers(token)
         self.dm_account_api.login_api.set_headers(token)
 
@@ -61,12 +59,9 @@ class AccountHelper:
             'rememberMe': True,
         }
         response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_data)
+        assert response.headers['x-dm-auth-token'], 'Токен для пользователя не был получен'
         assert response.status_code == 200, 'Не удалось авторизоваться после активации'
-        token_headers = {
-            'X-Dm-Auth-Token': response.headers.get('X-Dm-Auth-Token')
-        }
-        assert token_headers, 'Токен авторизации не получен'
-        return token_headers
+        return response
 
 
     def change_mail(
