@@ -22,12 +22,20 @@ class LoginApi(RestClient):
 
     def delete_v1_account_login(
             self,
-            token
-            ):
+            **kwargs
+    ):
+        """
+        Delete current user session
+        """
+        token = kwargs.get('token')
+
         headers = {
             'accept': '*/*',
-            'X-Dm-Auth-Token': token
         }
+
+        if token:
+            headers['X-Dm-Auth-Token'] = token
+
         return requests.delete(
             url=f'{self.host}/v1/account/login',
             headers=headers
@@ -35,16 +43,19 @@ class LoginApi(RestClient):
 
     def delete_v1_account_login_all(
             self,
-            token
+            **kwargs
     ):
         """
-        Logout from every device
+        Delete current user session
         """
+        token = kwargs.get('token')
 
         headers = {
             'accept': '*/*',
-            'X-Dm-Auth-Token': token
         }
+
+        if token:
+            headers['X-Dm-Auth-Token'] = token
 
         return requests.delete(
             url=f'{self.host}/v1/account/login/all',
