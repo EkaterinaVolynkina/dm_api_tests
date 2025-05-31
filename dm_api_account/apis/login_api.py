@@ -19,3 +19,45 @@ class LoginApi(RestClient):
             json=json_data
         )
         return response
+
+    def delete_v1_account_login(
+            self,
+            **kwargs
+    ):
+        """
+        Delete current user session
+        """
+        token = kwargs.get('token')
+
+        headers = {
+            'accept': '*/*',
+        }
+
+        if token:
+            headers['X-Dm-Auth-Token'] = token
+
+        return requests.delete(
+            url=f'{self.host}/v1/account/login',
+            headers=headers
+        )
+
+    def delete_v1_account_login_all(
+            self,
+            **kwargs
+    ):
+        """
+        Delete current user session
+        """
+        token = kwargs.get('token')
+
+        headers = {
+            'accept': '*/*',
+        }
+
+        if token:
+            headers['X-Dm-Auth-Token'] = token
+
+        return requests.delete(
+            url=f'{self.host}/v1/account/login/all',
+            headers=headers
+        )
