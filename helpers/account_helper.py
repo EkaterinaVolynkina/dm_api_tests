@@ -144,84 +144,29 @@ class AccountHelper:
 
     def delete_login(
             self,
-            login: str,
-            password: str,
-            email: str
-            ):
-        # Регистрируем пользователя
-        json_data = {
-            'login': login,
-            'password': password,
-            'email': email,
-        }
-        response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
-        assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
+            token: str | None = None
+    ):
+        headers = {}
+        if token:
+            headers = {
+                "X-Dm-Auth-Token": token
+            }
 
-        # Получаем письма с Mailhog и токен активации
-        response = self.mailhog.mailhog_api.get_api_v2_messages()
-        assert response.status_code == 200, "Письма не были получены"
-        token = self.get_activation_token_by_login(login=login, response=response)
-        assert token, f'Не найден токен активации для {login}'
-
-        # Активируем пользователя
-        response = self.dm_account_api.account_api.put_v1_account_token(token=token)
-        assert response.status_code == 200, 'Активация пользователя не удалась'
-
-        # Логинимся и получаем токен
-        json_login = {
-            'login': login,
-            'password': password,
-        }
-        response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_login)
-        assert response.status_code == 200, f'Ошибка при логине: {response.text}'
-        token = response.headers.get('X-Dm-Auth-Token')
-        assert token, 'Токен авторизации не получен'
-
-        # Выходим из аккаунта
-        response = self.dm_account_api.login_api.delete_v1_account_login(token=token)
-        assert response.status_code == 204, f"Не удалось выйти из аккаунта: {response.text}"
-
+        response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
+        return response
 
     def delete_login_all(
             self,
-            login: str,
-            password: str,
-            email: str
-    ):
-        # Регистрируем пользователя
-        json_data = {
-            'login': login,
-            'password': password,
-            'email': email,
-        }
-        response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
-        assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
+            token: str | None = None
+            ):
+        headers = {}
+        if token:
+            headers = {
+                "X-Dm-Auth-Token": token
+            }
 
-        # Получаем письма с Mailhog и токен активации
-        response = self.mailhog.mailhog_api.get_api_v2_messages()
-        assert response.status_code == 200, "Письма не были получены"
-        token = self.get_activation_token_by_login(login=login, response=response)
-        assert token, f'Не найден токен активации для {login}'
-
-        # Активируем пользователя
-        response = self.dm_account_api.account_api.put_v1_account_token(token=token)
-        assert response.status_code == 200, 'Активация пользователя не удалась'
-
-        # Логинимся и получаем токен
-        json_login = {
-            'login': login,
-            'password': password,
-        }
-        response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_login)
-        assert response.status_code == 200, f'Ошибка при логине: {response.text}'
-        token = response.headers.get('X-Dm-Auth-Token')
-        assert token, 'Токен авторизации не получен'
-
-        # Выходим из аккаунта
         response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
-        assert response.status_code == 204, f"Не удалось выйти из всех аккаунтов: {response.text}"
-        print(response.status_code)
-        print(token)
+        return response
 
     @staticmethod
     def get_activation_token_by_login(

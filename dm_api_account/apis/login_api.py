@@ -1,3 +1,5 @@
+import token
+
 import requests
 
 from restclient.client import RestClient
@@ -43,21 +45,15 @@ class LoginApi(RestClient):
 
     def delete_v1_account_login_all(
             self,
-            **kwargs
-    ):
-        """
-        Delete current user session
-        """
-        token = kwargs.get('token')
-
-        headers = {
-            'accept': '*/*',
-        }
-
+            token: str | None = None
+            ):
+        headers = {}
         if token:
-            headers['X-Dm-Auth-Token'] = token
+            headers = {
+                "X-Dm-Auth-Token": 'token'
+            }
 
-        return requests.delete(
+        response = self.delete_v1_account_login(
             url=f'{self.host}/v1/account/login/all',
-            headers=headers
-        )
+            headers=headers)
+        return response
