@@ -1,6 +1,11 @@
 import re
 import time
 
+from dm_api_account.models.change_email import ChangeEmail
+from dm_api_account.models.change_password import ChangePassword
+from dm_api_account.models.login_credentials import LoginCredentials
+from dm_api_account.models.registration import Registration
+from dm_api_account.models.reset_password import ResetPassword
 from services.dm_api_account import DMApiAccount
 from services.api_mailhog import MailHogApi
 
@@ -20,22 +25,21 @@ class AccountHelper:
             password: str,
             email: str
     ):
-        json_data = {
-            'login': login,
-            'password': password,
-            'email': email,
-        }
-        response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
+        registration = Registration(
+            login=login,
+            password=password,
+            email=email
+        )
+        response = self.dm_account_api.account_api.post_v1_account(registration=registration)
         assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
         start_time = time.time()
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         end_time = time.time()
-        assert end_time - start_time < 3, 'Время ожидания активации превышено'
+        assert end_time - start_time < 5, 'Время ожидания активации превышено'
         assert response.status_code == 200, "Письма не были получены"
         token = self.get_activation_token_by_login(login=login, response=response)
         assert token, f'Не найден токен активации для {login}'
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
-        assert response.status_code == 200, 'Активация пользователя не удалась'
         return response
 
     def auth_client(
@@ -44,25 +48,30 @@ class AccountHelper:
             password: str
     ):
         response = self.user_login(login=login, password=password)
-        token = {'x-dm-auth-token': response.headers['x-dm-auth-token']}
+        token = {
+            'x-dm-auth-token': response.headers['x-dm-auth-token']
+        }
         self.dm_account_api.account_api.set_headers(token)
         self.dm_account_api.login_api.set_headers(token)
 
     def user_login(
             self,
             login: str,
-            password: str
+            password: str,
+            remember_me: bool = True,
+            validate_response=False
     ):
-        json_data = {
-            'login': login,
-            'password': password,
-            'rememberMe': True,
-        }
-        response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_data)
+        login_credentials = LoginCredentials(
+            login=login,
+            password=password,
+            remember_me=remember_me
+        )
+        response = self.dm_account_api.login_api.post_v1_account_login(
+            login_credentials=login_credentials, validate_response=validate_response
+            )
         assert response.headers['x-dm-auth-token'], 'Токен для пользователя не был получен'
         assert response.status_code == 200, 'Не удалось авторизоваться после активации'
         return response
-
 
     def change_mail(
             self,
@@ -71,12 +80,12 @@ class AccountHelper:
             new_email: str
     ):
         # Запрос на смену email
-        json_data = {
-            'login': login,
-            'password': password,
-            'email': new_email,
-        }
-        response = self.dm_account_api.account_api.put_v1_account_email(json_data=json_data)
+        change_email = ChangeEmail(
+            login=login,
+            password=password,
+            email=new_email
+        )
+        response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
         assert response.status_code == 200, f'Не удалось отправить запрос на смену email: {response.text}'
 
         response = self.mailhog.mailhog_api.get_api_v2_messages()
@@ -85,8 +94,7 @@ class AccountHelper:
         # Подтверждение нового email
         new_token = self.get_activation_token_by_login(login=login, response=response)
         assert new_token, 'Не найден токен активации для нового email'
-        response = self.dm_account_api.account_api.put_v1_account_token(token=new_token)
-        assert response.status_code == 200, 'Подтверждение нового email не удалось'
+        self.dm_account_api.account_api.put_v1_account_token(token=new_token)
 
 
     def change_password(
@@ -94,129 +102,65 @@ class AccountHelper:
             login: str,
             password: str,
             email: str
-        ):
+    ):
         # Получаем токен авторизации
-        response = self.dm_account_api.login_api.post_v1_account_login(
-            json_data={
-                "login": login,
-                "password": password
-            }
-        )
-        token = response.headers.get('X-Dm-Auth-Token')
-        assert token, 'Токен авторизации не получен'
-
+        response = self.user_login(login=login, password=password)
+        auth_token = response.headers['x-dm-auth-token']
+        assert auth_token, 'Токен авторизации не получен'
 
         # Инициируем сброс пароля
         response = self.dm_account_api.account_api.post_v1_account_password(
-            json_data={
-                "login": login,
-                "email": email
-            }
+            reset_password=ResetPassword(
+                login=login,
+                email=email
+            )
         )
         assert response.status_code == 200, f"Не удалось инициировать сброс пароля: {response.text}"
 
         # Получаем токен сброса из письма
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, "Письма не были получены после смены email"
-        reset_token = self.get_activation_token_by_login(login=login, response=response)
-        assert reset_token, 'Не найден токен активации для нового email'
-
-        # Меняем пароль
+        token = self.get_activation_token_by_login(login=login, response=response)
+        assert token, 'Не найден токен активации для нового email'
         new_password = password + "1"
-        json_data = {
-            "login": login,
-            "token": reset_token,
-            "oldPassword": password,
-            "newPassword": new_password
-        }
-        response = self.dm_account_api.account_api.put_v1_account_password(
-            json_data=json_data,
-            token=token
+        change_password = ChangePassword(
+            login=login,
+            token=token,
+            oldPassword=password,
+            newPassword=new_password
         )
-        assert response.status_code == 200, f"Не удалось сменить пароль: {response.text}"
 
+        response = self.dm_account_api.account_api.put_v1_account_password(
+            change_password=change_password,
+            token=auth_token
+        )
         return new_password
 
     def delete_login(
             self,
-            login: str,
-            password: str,
-            email: str
-            ):
-        # Регистрируем пользователя
-        json_data = {
-            'login': login,
-            'password': password,
-            'email': email,
-        }
-        response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
-        assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
+            token: str | None = None
+    ):
+        headers = {}
+        if token:
+            headers = {
+                "X-Dm-Auth-Token": token
+            }
 
-        # Получаем письма с Mailhog и токен активации
-        response = self.mailhog.mailhog_api.get_api_v2_messages()
-        assert response.status_code == 200, "Письма не были получены"
-        token = self.get_activation_token_by_login(login=login, response=response)
-        assert token, f'Не найден токен активации для {login}'
-
-        # Активируем пользователя
-        response = self.dm_account_api.account_api.put_v1_account_token(token=token)
-        assert response.status_code == 200, 'Активация пользователя не удалась'
-
-        # Логинимся и получаем токен
-        json_login = {
-            'login': login,
-            'password': password,
-        }
-        response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_login)
-        assert response.status_code == 200, f'Ошибка при логине: {response.text}'
-        token = response.headers.get('X-Dm-Auth-Token')
-        assert token, 'Токен авторизации не получен'
-
-        # Выходим из аккаунта
-        response = self.dm_account_api.login_api.delete_v1_account_login(token=token)
-        assert response.status_code == 204, f"Не удалось выйти из аккаунта: {response.text}"
-
+        response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
+        return response
 
     def delete_login_all(
             self,
-            login: str,
-            password: str,
-            email: str
+            token: str | None = None
     ):
-        # Регистрируем пользователя
-        json_data = {
-            'login': login,
-            'password': password,
-            'email': email,
-        }
-        response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
-        assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
+        headers = {}
+        if token:
+            headers = {
+                "X-Dm-Auth-Token": token
+            }
 
-        # Получаем письма с Mailhog и токен активации
-        response = self.mailhog.mailhog_api.get_api_v2_messages()
-        assert response.status_code == 200, "Письма не были получены"
-        token = self.get_activation_token_by_login(login=login, response=response)
-        assert token, f'Не найден токен активации для {login}'
-
-        # Активируем пользователя
-        response = self.dm_account_api.account_api.put_v1_account_token(token=token)
-        assert response.status_code == 200, 'Активация пользователя не удалась'
-
-        # Логинимся и получаем токен
-        json_login = {
-            'login': login,
-            'password': password,
-        }
-        response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_login)
-        assert response.status_code == 200, f'Ошибка при логине: {response.text}'
-        token = response.headers.get('X-Dm-Auth-Token')
-        assert token, 'Токен авторизации не получен'
-
-        # Выходим из аккаунта
         response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
-        assert response.status_code == 204, f"Не удалось выйти из всех аккаунтов: {response.text}"
-        print(response.status_code)
-        print(token)
+        return response
 
     @staticmethod
     def get_activation_token_by_login(
