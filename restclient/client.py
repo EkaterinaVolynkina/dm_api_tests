@@ -17,6 +17,10 @@ class RestClient:
         self.session = session()
         self.log = structlog.get_logger(__name__).bind(service='api')
 
+    def set_headers(self, headers):
+        if headers:
+            self.session.headers.update(headers)
+
     def post(
             self,
             path,
