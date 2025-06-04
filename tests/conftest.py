@@ -59,10 +59,13 @@ def auth_account_helper(mailhog_api):
 @pytest.fixture
 def prepare_user():
     now = datetime.now()
-    data = now.strftime('%d_%m_%Y_%H_%M_%S')
-    login = f'Katya{data}'
+    milliseconds = now.strftime('%f')[:3]  # первые 3 цифры — миллисекунды
+    timestamp = now.strftime(f'%d_%m_%Y_%H_%M_%S_{milliseconds}')
+    login = f'Katya{timestamp}'
     password = '123456789'
     email = f'{login}@mail.ru'
     User = namedtuple('User', ['login', 'password', 'email'])
     user = User(login=login, password=password, email=email)
     return user
+
+
