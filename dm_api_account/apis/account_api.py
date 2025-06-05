@@ -47,7 +47,8 @@ class AccountApi(RestClient):
 
     def get_v1_account(
             self,
-            validate_response=True,
+            validate_response=False,
+            validate_headers=False,
             **kwargs
     ):
         """
@@ -57,8 +58,16 @@ class AccountApi(RestClient):
             path='/v1/account',
             **kwargs
         )
+
         parsed = UserDetailsEnvelope.model_validate_json(response.text)
-        return response.status_code, parsed
+
+        if validate_response:
+            assert response.status_code == 200, 'Статус код не 200'
+
+        if validate_headers:
+            assert 'x-dm-auth-token' in response.headers, 'Токен для пользователя не был получен'
+
+        return parsed
 
     def put_v1_account_token(
             self,

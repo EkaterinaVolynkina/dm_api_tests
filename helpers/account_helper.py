@@ -23,7 +23,7 @@ class AccountHelper:
             self,
             login: str,
             password: str,
-            email: str
+            email: str,
     ):
         registration = Registration(
             login=login,
@@ -45,9 +45,10 @@ class AccountHelper:
     def auth_client(
             self,
             login: str,
-            password: str
+            password: str,
+            validate_response=False
     ):
-        response = self.user_login(login=login, password=password)
+        response = self.user_login(login=login, password=password, validate_response=validate_response)
         token = {
             'x-dm-auth-token': response.headers['x-dm-auth-token']
         }
@@ -59,7 +60,8 @@ class AccountHelper:
             login: str,
             password: str,
             remember_me: bool = True,
-            validate_response=False
+            validate_response=False,
+            validate_headers=False
     ):
         login_credentials = LoginCredentials(
             login=login,
@@ -67,10 +69,12 @@ class AccountHelper:
             remember_me=remember_me
         )
         response = self.dm_account_api.login_api.post_v1_account_login(
-            login_credentials=login_credentials, validate_response=validate_response
+            login_credentials=login_credentials,
+            validate_response=validate_response
             )
-        assert response.headers['x-dm-auth-token'], 'Токен для пользователя не был получен'
-        assert response.status_code == 200, 'Не удалось авторизоваться после активации'
+        if validate_headers:
+            assert response.headers['x-dm-auth-token'], 'Токен для пользователя не был получен'
+            assert response.status_code == 200, 'Не удалось авторизоваться после активации'
         return response
 
     def change_mail(
