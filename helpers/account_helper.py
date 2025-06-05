@@ -70,12 +70,12 @@ class AccountHelper:
         )
         response = self.dm_account_api.login_api.post_v1_account_login(
             login_credentials=login_credentials,
-            validate_response=validate_response
-        )
+            validate_response=validate_response)
         if validate_headers:
-            assert response.headers.get('X-Dm-Auth-Token'), 'Токен авторизации не получен'
+            assert response.headers.get('X-Dm-Auth-Token'),'Токен авторизации не получен'
             assert response.status_code == 200, 'Пользователь не смог авторизоваться'
         return response
+
 
     def change_mail(
             self,
@@ -100,17 +100,19 @@ class AccountHelper:
         assert new_token, 'Не найден токен активации для нового email'
         self.dm_account_api.account_api.put_v1_account_token(token=new_token)
 
+
     def change_password(
             self,
             login: str,
             password: str,
             new_password: str,
             email: str
-    ):
+        ):
         # Получаем токен авторизации
         response = self.user_login(login=login, password=password)
         auth_token = response.headers['x-dm-auth-token']
         assert auth_token, 'Токен авторизации не получен'
+
 
         # Инициируем сброс пароля
         response = self.dm_account_api.account_api.post_v1_account_password(
@@ -126,7 +128,6 @@ class AccountHelper:
         assert response.status_code == 200, "Письма не были получены после смены email"
         token = self.get_activation_token_by_login(login=login, response=response)
         assert token, 'Не найден токен активации для нового email'
-
         new_password = password + "1"
         change_password = ChangePassword(
             login=login,
