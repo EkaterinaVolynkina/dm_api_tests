@@ -23,7 +23,7 @@ def test_post_v1_account_login(
     response = account_helper.user_login(login=login, password=password, validate_response=True)
     assert_that(
         response, all_of(
-            has_property('resource', has_property('login', starts_with('katya_1'))),
+            has_property('resource', has_property('login', starts_with('Katya05'))),
             has_property('resource', has_property('registration', instance_of(datetime))),
             has_property(
                 'resource', has_properties(
