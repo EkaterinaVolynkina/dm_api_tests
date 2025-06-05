@@ -98,6 +98,7 @@ class AccountHelper:
             self,
             login: str,
             password: str,
+            new_password: str,
             email: str
         ):
         # Получаем токен авторизации

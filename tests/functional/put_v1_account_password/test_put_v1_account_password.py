@@ -8,6 +8,6 @@ def test_put_v1_account_password(
 
     account_helper.register_new_user(login=login, password=password, email=email)
     account_helper.user_login(login=login, password=password)
-    new_password = account_helper.change_password(login=login, password=password, email=email)
+    new_password = account_helper.change_password(login=login, password=password, email=email, new_password=password)
     account_helper.user_login(login=login, password=new_password)
 
