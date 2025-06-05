@@ -2,27 +2,22 @@ from datetime import datetime
 
 from hamcrest import (
     assert_that,
-    has_property,
-    starts_with,
     all_of,
-    instance_of,
+    has_property,
     has_properties,
     equal_to,
+    instance_of,
+    starts_with,
+    has_items,
 )
 
 
-def test_post_v1_account_login(
-        account_helper,
-        prepare_user
-        ):
-    login = prepare_user.login
-    password = prepare_user.password
-    email = prepare_user.email
-    account_helper.register_new_user(login=login, password=password, email=email)
-    response = account_helper.user_login(login=login, password=password, validate_response=True)
+def test_get_v1_account_auth(auth_account_helper):
+    response = auth_account_helper.dm_account_api.account_api.get_v1_account(validate_response=True)
     assert_that(
         response, all_of(
-            has_property('resource', has_property('login', starts_with('Katya05'))),
+            has_property('resource', has_property('login', starts_with('katya_1'))),
+            has_property('resource', has_property('roles', has_items("Guest", "Player"))),
             has_property('resource', has_property('registration', instance_of(datetime))),
             has_property(
                 'resource', has_properties(
@@ -39,4 +34,7 @@ def test_post_v1_account_login(
             )
         )
     )
-    print(response)
+
+
+def test_get_v1_account_no_auth(account_helper):
+    account_helper.dm_account_api.account_api.get_v1_account()
