@@ -43,13 +43,14 @@ class AccountHelper:
         return response
 
     def auth_client(
-        self,
-        login: str,
-        password: str
+            self,
+            login: str,
+            password: str,
+            validate_response=False
     ):
-        response= self.user_login(login=login, password=password)
+        response = self.user_login(login=login, password=password, validate_response=validate_response)
         token = {
-        'x-dm-auth-token': response.headers['x-dm-auth-token']
+            'x-dm-auth-token': response.headers['x-dm-auth-token']
         }
         self.dm_account_api.account_api.set_headers(token)
         self.dm_account_api.login_api.set_headers(token)
@@ -58,19 +59,23 @@ class AccountHelper:
             self,
             login: str,
             password: str,
-            remember_me: bool = True
+            remember_me: bool = True,
+            validate_response=False,
+            validate_headers=False
     ):
         login_credentials = LoginCredentials(
             login=login,
             password=password,
             remember_me=remember_me
         )
-        response= self.dm_account_api.login_api.post_v1_account_login(
-            login_credentials=login_credentials
+        response = self.dm_account_api.login_api.post_v1_account_login(
+            login_credentials=login_credentials,
+            validate_response=validate_response
         )
-        assert response.headers.get('X-Dm-Auth-Token'), 'Токен авторизации не получен'
+        if validate_headers:
+            assert response.headers.get('X-Dm-Auth-Token'), 'Токен авторизации не получен'
+            assert response.status_code == 200, 'Пользователь не смог авторизоваться'
         return response
-
 
     def change_mail(
             self,
@@ -151,7 +156,7 @@ class AccountHelper:
     def delete_login_all(
             self,
             token: str | None = None
-            ):
+    ):
         headers = {}
         if token:
             headers = {
