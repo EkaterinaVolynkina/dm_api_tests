@@ -1,4 +1,6 @@
 import uuid
+
+import curlify
 from requests import JSONDecodeError
 import structlog
 from requests import session
@@ -60,6 +62,7 @@ class RestClient:
 
         if self.disable_log:
             rest_response = self.session.request(method=method, url=full_url, **kwargs)
+            rest_response.raise_for_status()
             return rest_response
 
         log.msg(
@@ -73,8 +76,9 @@ class RestClient:
         )
 
         rest_response = self.session.request(method=method, url=full_url, **kwargs)
-
-
+        rest_response.raise_for_status()
+        curl = curlify.to_curl(rest_response.request)
+        print(curl)
         log.msg(
             event='Response',
             status_code=rest_response.status_code,

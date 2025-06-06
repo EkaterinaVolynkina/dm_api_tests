@@ -73,7 +73,7 @@ class AccountHelper:
             validate_response=validate_response)
         if validate_headers:
             assert response.headers.get('X-Dm-Auth-Token'),'Токен авторизации не получен'
-            assert response.status_code == 200, 'Пользователь не смог авторизоваться'
+
         return response
 
 
