@@ -19,9 +19,9 @@ from dm_api_account.models.user_details_envelope import UserRole
 def test_get_v1_account_auth(auth_account_helper):
     response = auth_account_helper.dm_account_api.account_api.get_v1_account(validate_response=True)
     with soft_assertions():
-        assertpy_that(response.resource.login).starts_with('1katya_1')
+        assertpy_that(response.resource.login).starts_with('katya_1')
         assertpy_that(response.resource.online).is_instance_of(datetime)
-        assertpy_that(response.resource.roles).contains(UserRole.GUEST, UserRole.PLAYER, 'rooer')
+        assertpy_that(response.resource.roles).contains(UserRole.GUEST, UserRole.PLAYER)
 
 
 
