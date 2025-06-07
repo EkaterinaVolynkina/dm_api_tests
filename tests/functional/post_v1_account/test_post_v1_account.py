@@ -21,11 +21,5 @@ def test_post_v1_account(
     ('k', 'email@mail.ru', 'Qwerty123!', 400)
 ])
 def test_post_v1_account_negative(account_helper, login, email, password, expected_status_code):
-    registration = Registration(
-        login=login,
-        email=email,
-        password=password
-    )
-
     with check_status_code_http(expected_status_code):
-        account_helper.dm_account_api.account_api.post_v1_account(registration=registration)
+        account_helper.register_new_user(login=login, password=password, email=email)

@@ -21,11 +21,12 @@ class GetV1Account:
     @classmethod
     def check_response_value(
             cls,
+            expected_login: str,
             response: UserDetailsEnvelope
     ):
         assert_that(
             response, all_of(
-                has_property('resource', has_property('login', starts_with('katya_1'))),
+                has_property('resource', has_property('login', starts_with(expected_login))),
                 has_property('resource', has_property('roles', has_items("Guest", "Player"))),
                 has_property('resource', has_property('registration', instance_of(datetime))),
                 has_property(
@@ -46,9 +47,10 @@ class GetV1Account:
     @classmethod
     def check_response_soft(
             cls,
+            expected_login: str,
             response
     ):
         with soft_assertions():
-            assertpy_that(response.resource.login).starts_with('katya_1')
+            assertpy_that(response.resource.login).starts_with(expected_login)
             assertpy_that(response.resource.online).is_instance_of(datetime)
             assertpy_that(response.resource.roles).contains(UserRole.GUEST, UserRole.PLAYER)
