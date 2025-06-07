@@ -16,7 +16,7 @@ structlog.configure(
     processors=[
         structlog.processors.JSONRenderer(
             indent=4,
-            ensure_ascii=False, #чтобы были русские буквы
+            ensure_ascii=False,
             # sort_keys=True
         )
     ]
@@ -50,10 +50,10 @@ def auth_account_helper(mailhog_api):
     dm_api_configuration = DmApiConfiguration(host='http://5.63.153.31:5051', disable_log=False)
     account = DMApiAccount(configuration=dm_api_configuration)
     account_helper = AccountHelper(dm_account_api=account, mailhog=mailhog_api)
-    account_helper.auth_client(
-        login='katya_1_caef2a',
-        password='Qwerty123!'
-    )
+    login = 'katya_1_caef2a'
+    password = 'Qwerty123!'
+    account_helper.auth_client(login=login, password=password)
+    account_helper.login = login
     return account_helper
 
 @pytest.fixture
@@ -67,5 +67,3 @@ def prepare_user():
     User = namedtuple('User', ['login', 'password', 'email'])
     user = User(login=login, password=password, email=email)
     return user
-
-
