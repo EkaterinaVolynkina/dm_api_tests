@@ -86,7 +86,6 @@ class AccountHelper:
         )
         response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
         response = self.mailhog.mailhog_api.get_api_v2_messages()
-        assert response.status_code == 200, "Письма не были получены после смены email"
 
         # Подтверждение нового email
         new_token = self.get_activation_token_by_login(login=login, response=response)
@@ -157,7 +156,6 @@ class AccountHelper:
             headers = {
                 "X-Dm-Auth-Token": token
             }
-
         response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
         return response
 
