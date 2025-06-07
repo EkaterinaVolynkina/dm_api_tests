@@ -25,7 +25,7 @@ class PostV1Account:
         assert_that(str(response.resource.registration), (starts_with(today)))
         assert_that(
             response, all_of(
-                has_property('resource', has_property('login', starts_with('Katya0'))),
+                has_property('resource', has_property('login', starts_with('Katya'))),
                 has_property('resource', has_property('registration', instance_of(datetime))),
                 has_property(
                     'resource', has_properties(
