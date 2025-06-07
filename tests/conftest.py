@@ -16,7 +16,7 @@ structlog.configure(
     processors=[
         structlog.processors.JSONRenderer(
             indent=4,
-            # ensure_ascii=True,
+            # ensure_ascii=False,
             # sort_keys=True
         )
     ]
@@ -58,10 +58,8 @@ def auth_account_helper(mailhog_api):
 
 @pytest.fixture
 def prepare_user():
-    suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=5))
-    now = datetime.now()
-    data = now.strftime('%d_%m_%Y_%H_%M_%S')
-    login = f'Katya{data}_{suffix}'
+    data = datetime.now().strftime('%d%m%Y_%H%M%S%f')[:-3]
+    login = f'Katya{data}'
     password = '123456789'
     email = f'{login}@mail.ru'
     User = namedtuple('User', ['login', 'password', 'email'])

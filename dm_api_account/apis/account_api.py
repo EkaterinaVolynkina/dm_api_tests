@@ -88,7 +88,7 @@ class AccountApi(RestClient):
             validate_response=True
     ):
         """
-        Change registered user password
+        Change registered user password_
         """
         headers = {
             'accept': 'text/plain',

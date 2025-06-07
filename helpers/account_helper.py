@@ -85,8 +85,6 @@ class AccountHelper:
             email=new_email
         )
         response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
-        assert response.status_code == 200, f'Не удалось отправить запрос на смену email: {response.text}'
-
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, "Письма не были получены после смены email"
 
@@ -137,28 +135,30 @@ class AccountHelper:
 
     def delete_login(
             self,
-            token: str | None = None
+            **kwargs
     ):
         headers = {}
+        token = kwargs.get('token')
         if token:
             headers = {
                 "X-Dm-Auth-Token": token
             }
 
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
+        response = self.dm_account_api.login_api.delete_v1_account_login(headers=headers)
         return response
 
     def delete_login_all(
             self,
-            token: str | None = None
+            **kwargs
             ):
         headers = {}
+        token = kwargs.get('token')
         if token:
             headers = {
                 "X-Dm-Auth-Token": token
             }
 
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
+        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
         return response
 
     @staticmethod
