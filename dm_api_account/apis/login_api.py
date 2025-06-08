@@ -43,7 +43,6 @@ class LoginApi(RestClient):
             'accept': '*/*',
             'Content-Type': 'application/json',
         }
-
         return self.delete(
             path=f'/v1/account/login/all',
             headers=kwargs.get('token')

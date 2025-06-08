@@ -132,15 +132,15 @@ class AccountHelper:
         )
         return new_password
 
+
     def delete_login(
             self,
-            **kwargs
+            token: str | None = None
     ):
         headers = {}
-        token = kwargs.get('token')
         if token:
             headers = {
-                "X-Dm-Auth-Token": token
+                "X-Dm-Auth-Token": 'token'
             }
 
         response = self.dm_account_api.login_api.delete_v1_account_login(headers=headers)
@@ -148,14 +148,14 @@ class AccountHelper:
 
     def delete_login_all(
             self,
-            **kwargs
+            token: str | None = None
             ):
         headers = {}
-        token = kwargs.get('token')
         if token:
             headers = {
-                "X-Dm-Auth-Token": token
+                "X-Dm-Auth-Token": 'token'
             }
+
         response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
         return response
 
