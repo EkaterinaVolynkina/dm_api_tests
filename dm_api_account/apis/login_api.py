@@ -1,7 +1,7 @@
-import token
-
 import requests
 
+from dm_api_account.models.login_credentials import LoginCredentials
+from dm_api_account.models.user_envelope import UserEnvelope
 from restclient.client import RestClient
 
 
@@ -9,51 +9,53 @@ class LoginApi(RestClient):
 
     def post_v1_account_login(
             self,
-            json_data
-        ):
-        """
-        Authenticate via credentials
-        :param json_data:
-        :return:
-        """
+            login_credentials: LoginCredentials,
+            validate_response=False
+    ):
         response = self.post(
             path=f'/v1/account/login',
-            json=json_data
+            json=login_credentials.model_dump(exclude_none=True, by_alias=True)
         )
+        if validate_response:
+            return UserEnvelope(**response.json())
         return response
 
     def delete_v1_account_login(
             self,
             **kwargs
-    ):
-        """
-        Delete current user session
-        """
-        token = kwargs.get('token')
-
+            ):
         headers = {
             'accept': '*/*',
+            'Content-Type': 'application/json'
         }
-
+        token = kwargs.get('token')
         if token:
-            headers['X-Dm-Auth-Token'] = token
+            headers.update(token)
 
-        return requests.delete(
-            url=f'{self.host}/v1/account/login',
+        return self.delete(
+            path='/v1/account/login',
             headers=headers
         )
 
     def delete_v1_account_login_all(
             self,
-            token: str | None = None
-            ):
-        headers = {}
-        if token:
-            headers = {
-                "X-Dm-Auth-Token": 'token'
-            }
+            **kwargs
+    ):
+        """
+        Logout from every device
+        """
 
-        response = self.delete_v1_account_login(
-            url=f'{self.host}/v1/account/login/all',
-            headers=headers)
-        return response
+        headers = {
+            'accept': '*/*',
+            'Content-Type': 'application/json'
+        }
+
+        token = kwargs.get('token')
+        if token:
+            headers.update(token)
+
+        return self.delete(
+            path='/v1/account/login',
+            headers=headers
+        )
+
