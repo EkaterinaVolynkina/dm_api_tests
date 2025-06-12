@@ -27,14 +27,18 @@ class LoginApi(RestClient):
 
         return self.delete(
             path='/v1/account/login'
-        )
+            )
 
     def delete_v1_account_login_all(
             self,
             **kwargs
             ):
 
+        """
+        Logout from every device
+        """
 
         return self.delete(
             path='/v1/account/login/all'
         )
+
