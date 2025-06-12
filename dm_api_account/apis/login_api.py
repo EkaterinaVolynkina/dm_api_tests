@@ -40,7 +40,6 @@ class LoginApi(RestClient):
             **kwargs
             ):
 
-
         response = self.delete(
             path='/v1/account/login/all'
         )
