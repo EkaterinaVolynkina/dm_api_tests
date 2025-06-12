@@ -151,7 +151,7 @@ class AccountHelper:
                 "X-Dm-Auth-Token": token
             }
 
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
+        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
         return response
 
     def delete_login_all(
@@ -164,7 +164,7 @@ class AccountHelper:
                 "X-Dm-Auth-Token": token
             }
 
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
+        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
         return response
 
     @staticmethod
