@@ -143,6 +143,7 @@ class AccountHelper:
 
     def delete_login(
             self,
+            validate_response=False,
             token: str | None = None
     ):
         headers = {}
@@ -151,11 +152,12 @@ class AccountHelper:
                 "X-Dm-Auth-Token": token
             }
 
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
+        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers, validate_response=validate_response)
         return response
 
     def delete_login_all(
             self,
+            validate_response=False,
             token: str | None = None
     ):
         headers = {}
@@ -164,7 +166,7 @@ class AccountHelper:
                 "X-Dm-Auth-Token": token
             }
 
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
+        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers, validate_response=validate_response)
         return response
 
     @staticmethod

@@ -19,7 +19,7 @@ structlog.configure(
     processors=[
         structlog.processors.JSONRenderer(
             indent=4,
-            # ensure_ascii=False,
+            ensure_ascii=False,
             # sort_keys=True
         )
     ]
