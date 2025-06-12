@@ -18,6 +18,7 @@ class AccountHelper:
     ):
         self.dm_account_api = dm_account_api
         self.mailhog = mailhog
+        self.token = None
 
     def register_new_user(
             self,
@@ -49,6 +50,7 @@ class AccountHelper:
             validate_response=False
     ):
         response = self.user_login(login=login, password=password, validate_response=validate_response)
+
         token = {
             'x-dm-auth-token': response.headers['x-dm-auth-token']
         }
@@ -150,8 +152,7 @@ class AccountHelper:
             headers = {
                 "X-Dm-Auth-Token": token
             }
-
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
+        response = self.dm_account_api.login_api.delete_v1_account_login(token=token)
         return response
 
     def delete_login_all(
@@ -163,7 +164,6 @@ class AccountHelper:
             headers = {
                 "X-Dm-Auth-Token": token
             }
-
         response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
         return response
 
