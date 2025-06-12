@@ -23,39 +23,22 @@ class LoginApi(RestClient):
     def delete_v1_account_login(
             self,
             **kwargs
-            ):
-        headers = {
-            'accept': '*/*',
-            'Content-Type': 'application/json'
-        }
-        token = kwargs.get('token')
-        if token:
-            headers.update(token)
+    ):
 
         return self.delete(
-            path='/v1/account/login',
-            headers=headers
-        )
+            path='/v1/account/login'
+            )
 
     def delete_v1_account_login_all(
             self,
             **kwargs
-    ):
+            ):
+
         """
         Logout from every device
         """
 
-        headers = {
-            'accept': '*/*',
-            'Content-Type': 'application/json'
-        }
-
-        token = kwargs.get('token')
-        if token:
-            headers.update(token)
-
         return self.delete(
-            path='/v1/account/login',
-            headers=headers
+            path='/v1/account/login/all'
         )
 
