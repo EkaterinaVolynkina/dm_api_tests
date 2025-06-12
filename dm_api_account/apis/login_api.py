@@ -1,5 +1,6 @@
 import requests
 
+from dm_api_account.models.general_error import GeneralError
 from dm_api_account.models.login_credentials import LoginCredentials
 from dm_api_account.models.user_envelope import UserEnvelope
 from restclient.client import RestClient
@@ -22,31 +23,26 @@ class LoginApi(RestClient):
 
     def delete_v1_account_login(
             self,
-            token
-            ):
-        headers = {
-            'accept': '*/*',
-            'X-Dm-Auth-Token': token
-        }
-        return self.delete(
-            path=f'/v1/account/login',
-            headers=headers
+            validate_response=False,
+            **kwargs
+    ):
+
+        response = self.delete(
+            path='/v1/account/login'
         )
+        if validate_response:
+            return GeneralError(**response.json())
+        return response
 
     def delete_v1_account_login_all(
             self,
-            token
+            validate_response=False,
+            **kwargs
     ):
-        """
-        Logout from every device
-        """
 
-        headers = {
-            'accept': '*/*',
-            'X-Dm-Auth-Token': token
-        }
-
-        return self.delete(
-            path=f'/v1/account/login/all',
-            headers=headers
+        response = self.delete(
+            path='/v1/account/login/all'
         )
+        if validate_response:
+            return GeneralError(**response.json())
+        return response
