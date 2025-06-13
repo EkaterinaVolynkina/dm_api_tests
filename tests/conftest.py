@@ -19,11 +19,7 @@ structlog.configure(
     processors=[
         structlog.processors.JSONRenderer(
             indent=4,
-<<<<<<< pydantic_1306
             ensure_ascii=False
-=======
-            ensure_ascii=False,
->>>>>>> main
             # sort_keys=True
         )
     ]
