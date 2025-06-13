@@ -108,6 +108,7 @@ class AccountApi(RestClient):
             return UserEnvelope(**response.json())
         return response
 
+
     def put_v1_account_email(
             self,
             change_email: ChangeEmail,

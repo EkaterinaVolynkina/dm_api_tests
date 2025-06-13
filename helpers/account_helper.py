@@ -18,6 +18,7 @@ class AccountHelper:
     ):
         self.dm_account_api = dm_account_api
         self.mailhog = mailhog
+        self.token = None
 
     def register_new_user(
             self,
@@ -49,6 +50,7 @@ class AccountHelper:
             validate_response=False
     ):
         response = self.user_login(login=login, password=password, validate_response=validate_response)
+
         token = {
             'x-dm-auth-token': response.headers['x-dm-auth-token']
         }
@@ -90,7 +92,6 @@ class AccountHelper:
             email=new_email
         )
         response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
-
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, "Письма не были получены после смены email"
 
@@ -149,7 +150,7 @@ class AccountHelper:
                 "X-Dm-Auth-Token": token
             }
 
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
+        response = self.dm_account_api.login_api.delete_v1_account_login(headers=headers)
         return response
 
     def delete_login_all(
