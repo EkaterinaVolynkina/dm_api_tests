@@ -151,12 +151,8 @@ class AccountHelper:
             headers = {
                 "X-Dm-Auth-Token": token
             }
-<<<<<<< pydantic_1306
 
         response = self.dm_account_api.login_api.delete_v1_account_login(headers=headers)
-=======
-        response = self.dm_account_api.login_api.delete_v1_account_login(token=token)
->>>>>>> main
         return response
 
     def delete_login_all(
@@ -168,12 +164,8 @@ class AccountHelper:
             headers = {
                 "X-Dm-Auth-Token": token
             }
-<<<<<<< pydantic_1306
 
         response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
-=======
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
->>>>>>> main
         return response
 
 
