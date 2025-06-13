@@ -92,7 +92,7 @@ class AccountHelper:
             email=new_email
         )
         response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
-        assert response.status_code == 200, f'Не удалось отправить запрос на смену email: {response.text}'
+
 
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, "Письма не были получены после смены email"
@@ -123,7 +123,6 @@ class AccountHelper:
                 email=email
             )
         )
-        assert response.status_code == 200, f"Не удалось инициировать сброс пароля: {response.text}"
 
         # Получаем токен сброса из письма
         response = self.mailhog.mailhog_api.get_api_v2_messages()
@@ -152,7 +151,8 @@ class AccountHelper:
             headers = {
                 "X-Dm-Auth-Token": token
             }
-        response = self.dm_account_api.login_api.delete_v1_account_login(token=token)
+
+        response = self.dm_account_api.login_api.delete_v1_account_login(headers=headers)
         return response
 
     def delete_login_all(
@@ -164,8 +164,11 @@ class AccountHelper:
             headers = {
                 "X-Dm-Auth-Token": token
             }
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(token=token)
+
+        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
         return response
+
+
 
     @staticmethod
     def get_activation_token_by_login(

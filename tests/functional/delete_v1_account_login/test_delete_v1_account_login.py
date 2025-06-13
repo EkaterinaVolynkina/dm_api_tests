@@ -5,7 +5,6 @@ def test_delete_v1_account_login(auth_account_helper):
     with check_status_code_http():
         auth_account_helper.delete_login()
 
-
 def test_delete_v1_account_login_negative(account_helper):
     with check_status_code_http(401, 'User must be authenticated'):
         account_helper.delete_login()

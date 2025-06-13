@@ -19,7 +19,7 @@ structlog.configure(
     processors=[
         structlog.processors.JSONRenderer(
             indent=4,
-            ensure_ascii=False,
+            ensure_ascii=False
             # sort_keys=True
         )
     ]
@@ -31,7 +31,7 @@ options = (
     'user.login',
     'user.password'
 )
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='function', autouse=True)
 def set_config(request):
     config = Path(__file__).joinpath('../../').joinpath('config')
     config_name = request.config.getoption('--env')
@@ -51,21 +51,21 @@ def pytest_addoption(
         parser.addoption(f'--{option}', action='store', default=None)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def mailhog_api():
     mailhog_configuration = MailHogConfiguration(host=v.get('service.mailhog'), disable_log=False)
     mailhog_client = MailHogApi(configuration=mailhog_configuration)
     return mailhog_client
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def account_api():
     dm_api_configuration = DmApiConfiguration(host=v.get('service.dm_api_account'), disable_log=False)
     account = DMApiAccount(configuration=dm_api_configuration)
     return account
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def account_helper(
         account_api,
         mailhog_api
@@ -73,7 +73,7 @@ def account_helper(
     account_helper = AccountHelper(dm_account_api=account_api, mailhog=mailhog_api)
     return account_helper
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def auth_account_helper(mailhog_api):
     dm_api_configuration = DmApiConfiguration(host=v.get('service.dm_api_account'), disable_log=False)
     account = DMApiAccount(configuration=dm_api_configuration)

@@ -1,5 +1,6 @@
 import requests
 
+from dm_api_account.models.general_error import GeneralError
 from dm_api_account.models.login_credentials import LoginCredentials
 from dm_api_account.models.user_envelope import UserEnvelope
 from restclient.client import RestClient
@@ -23,39 +24,21 @@ class LoginApi(RestClient):
     def delete_v1_account_login(
             self,
             **kwargs
-            ):
-        headers = {
-            'accept': '*/*',
-            'Content-Type': 'application/json'
-        }
-        token = kwargs.get('token')
-        if token:
-            headers.update(token)
+    ):
 
-        return self.delete(
-            path='/v1/account/login',
-            headers=headers
-        )
+        response = self.delete(
+            path='/v1/account/login', **kwargs
+            )
+        return response
 
     def delete_v1_account_login_all(
             self,
             **kwargs
     ):
-        """
-        Logout from every device
-        """
 
-        headers = {
-            'accept': '*/*',
-            'Content-Type': 'application/json'
-        }
-
-        token = kwargs.get('token')
-        if token:
-            headers.update(token)
-
-        return self.delete(
-            path='/v1/account/login',
-            headers=headers
+        response = self.delete(
+            path='/v1/account/login/all', **kwargs
         )
+        return response
+
 
