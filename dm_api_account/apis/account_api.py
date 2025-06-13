@@ -120,9 +120,12 @@ class AccountApi(RestClient):
         """
         response = self.put(
             path=f'/v1/account/email',
+            headers=kwargs.get('token'),
             json=change_email.model_dump(exclude_none=True, by_alias=True),
             **kwargs
         )
+
         if validate_response:
             return UserEnvelope(**response.json())
         return response
+
