@@ -24,55 +24,22 @@ class LoginApi(RestClient):
     def delete_v1_account_login(
             self,
             **kwargs
-<<<<<<< pydantic_1306
     ):
 
         response = self.delete(
             path='/v1/account/login', **kwargs
-=======
-            ):
-        headers = {
-            'accept': '*/*',
-            'Content-Type': 'application/json'
-        }
-        token = kwargs.get('token')
-        if token:
-            headers.update(token)
-
-        return self.delete(
-            path='/v1/account/login',
-            headers=headers
->>>>>>> main
-        )
+            )
         return response
 
     def delete_v1_account_login_all(
             self,
             **kwargs
     ):
-<<<<<<< pydantic_1306
 
         response = self.delete(
             path='/v1/account/login/all', **kwargs
         )
         return response
-=======
-        """
-        Logout from every device
-        """
 
-        headers = {
-            'accept': '*/*',
-            'Content-Type': 'application/json'
-        }
-
-        token = kwargs.get('token')
-        if token:
-            headers.update(token)
-
-        return self.delete(
-            path='/v1/account/login',
-            headers=headers
-        )
 
 >>>>>>> main
