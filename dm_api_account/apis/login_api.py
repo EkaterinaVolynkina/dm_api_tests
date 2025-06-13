@@ -23,26 +23,20 @@ class LoginApi(RestClient):
 
     def delete_v1_account_login(
             self,
-            validate_response=False,
             **kwargs
     ):
 
         response = self.delete(
-            path='/v1/account/login'
+            path='/v1/account/login', **kwargs
         )
-        if validate_response:
-            return GeneralError(**response.json())
         return response
 
     def delete_v1_account_login_all(
             self,
-            validate_response=False,
             **kwargs
     ):
 
         response = self.delete(
-            path='/v1/account/login/all'
+            path='/v1/account/login/all', **kwargs
         )
-        if validate_response:
-            return GeneralError(**response.json())
         return response
