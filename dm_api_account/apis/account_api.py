@@ -29,21 +29,22 @@ class AccountApi(RestClient):
 
     def post_v1_account_password(
             self,
-            reset_password: ResetPassword
+            reset_password: ResetPassword,
+            validate_response: bool = True,
+            **kwargs
     ):
         """
         Reset registered user password
         """
 
-        headers = {
-            'accept': 'text/plain',
-            'Content-Type': 'application/json',
-        }
-        return self.post(
+        response = self.post(
             path=f'/v1/account/password',
-            headers=headers,
-            json=reset_password.model_dump(exclude_none=True, by_alias=True)
+            json=reset_password.model_dump(exclude_none=True, by_alias=True),
+            **kwargs
         )
+        if validate_response:
+            return UserEnvelope(**response.json())
+        return response
 
     def get_v1_account(
             self,
@@ -110,19 +111,20 @@ class AccountApi(RestClient):
     def put_v1_account_email(
             self,
             change_email: ChangeEmail,
+            validate_response: bool = True,
             **kwargs
     ):
         """
         Change registered user email
         """
-        headers = {
-            'accept': 'text/plain',
-            'Content-Type': 'application/json',
-        }
-
-        return self.put(
+        response = self.put(
             path=f'/v1/account/email',
             headers=kwargs.get('token'),
-            json=change_email.model_dump(exclude_none=True, by_alias=True)
+            json=change_email.model_dump(exclude_none=True, by_alias=True),
+            **kwargs
         )
+
+        if validate_response:
+            return UserEnvelope(**response.json())
+        return response
 
