@@ -42,4 +42,3 @@ class LoginApi(RestClient):
         return response
 
 
->>>>>>> main
