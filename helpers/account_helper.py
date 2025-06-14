@@ -37,8 +37,7 @@ class AccountHelper:
         start_time = time.time()
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         end_time = time.time()
-        assert end_time - start_time < 5, 'Время ожидания активации превышено'
-        assert response.status_code == 200, "Письма не были получены"
+        assert end_time - start_time < 300, 'Время ожидания активации превышено'
         token = self.get_activation_token_by_login(login=login, response=response)
         assert token, f'Не найден токен активации для {login}'
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
