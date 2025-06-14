@@ -1,4 +1,5 @@
-
+import os
+import shutil
 from collections import namedtuple
 from datetime import datetime
 import random
@@ -95,3 +96,4 @@ def prepare_user():
     User = namedtuple('User', ['login', 'password', 'email'])
     user = User(login=login, password=password, email=email)
     return user
+

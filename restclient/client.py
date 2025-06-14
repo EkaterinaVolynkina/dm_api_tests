@@ -6,6 +6,7 @@ import structlog
 from requests import session
 
 from restclient.configuration import Configuration
+from restclient.utilities import allure_attach
 
 
 class RestClient:
@@ -35,12 +36,14 @@ class RestClient:
     ):
         return self._send_request(method='POST', path=path, **kwargs)
 
+
     def get(
             self,
             path,
             **kwargs
     ):
         return self._send_request(method='GET', path=path, **kwargs)
+
 
     def put(
             self,
@@ -49,6 +52,7 @@ class RestClient:
     ):
         return self._send_request(method='PUT', path=path, **kwargs)
 
+
     def delete(
             self,
             path,
@@ -56,6 +60,7 @@ class RestClient:
     ):
         return self._send_request(method='DELETE', path=path, **kwargs)
 
+    @allure_attach
     def _send_request(
             self,
             method,

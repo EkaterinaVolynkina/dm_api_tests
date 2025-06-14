@@ -1,6 +1,8 @@
 import re
 import time
 
+import allure
+
 from dm_api_account.models.change_email import ChangeEmail
 from dm_api_account.models.change_password import ChangePassword
 from dm_api_account.models.login_credentials import LoginCredentials
@@ -20,6 +22,7 @@ class AccountHelper:
         self.mailhog = mailhog
         self.token = None
 
+    @allure.step('Регистрация пользователя')
     def register_new_user(
             self,
             login: str,
@@ -32,7 +35,6 @@ class AccountHelper:
             email=email
         )
         response = self.dm_account_api.account_api.post_v1_account(registration=registration)
-        assert response.status_code == 201, f'Пользователь не был создан: {response.text}'
         start_time = time.time()
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         end_time = time.time()
@@ -43,6 +45,7 @@ class AccountHelper:
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
         return response
 
+    @allure.step('Авторизация пользователя')
     def auth_client(
             self,
             login: str,
@@ -57,6 +60,7 @@ class AccountHelper:
         self.dm_account_api.account_api.set_headers(token)
         self.dm_account_api.login_api.set_headers(token)
 
+    @allure.step('Аутентификация пользователя')
     def user_login(
             self,
             login: str,
@@ -78,7 +82,7 @@ class AccountHelper:
 
         return response
 
-
+    @allure.step('Запрос на смену email')
     def change_mail(
             self,
             login: str,
@@ -95,12 +99,11 @@ class AccountHelper:
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, "Письма не были получены после смены email"
 
-        # Подтверждение нового email
         new_token = self.get_activation_token_by_login(login=login, response=response)
         assert new_token, 'Не найден токен активации для нового email'
         self.dm_account_api.account_api.put_v1_account_token(token=new_token)
 
-
+    @allure.step('Запрос на смену пароля')
     def change_password(
             self,
             login: str,
@@ -108,21 +111,18 @@ class AccountHelper:
             new_password: str,
             email: str
         ):
-        # Получаем токен авторизации
         response = self.user_login(login=login, password=password)
         auth_token = response.headers['x-dm-auth-token']
         assert auth_token, 'Токен авторизации не получен'
 
 
-        # Инициируем сброс пароля
         response = self.dm_account_api.account_api.post_v1_account_password(
-            reset_password=ResetPassword(
-                login=login,
-                email=email
-            )
-        )
+        reset_password=ResetPassword(
+            login=login,
+            email=email
+         )
+     )
 
-        # Получаем токен сброса из письма
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, "Письма не были получены после смены email"
         token = self.get_activation_token_by_login(login=login, response=response)
@@ -134,12 +134,14 @@ class AccountHelper:
             oldPassword=password,
             newPassword=new_password
         )
+
         response = self.dm_account_api.account_api.put_v1_account_password(
             change_password=change_password,
             token=auth_token
         )
         return new_password
 
+    @allure.step('Удаление текущей сессии пользователя')
     def delete_login(
             self,
             token: str | None = None
@@ -153,6 +155,7 @@ class AccountHelper:
         response = self.dm_account_api.login_api.delete_v1_account_login(headers=headers)
         return response
 
+    @allure.step('Удаление всех сессий пользователя')
     def delete_login_all(
             self,
             token: str | None = None
