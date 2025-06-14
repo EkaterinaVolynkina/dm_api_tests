@@ -28,12 +28,14 @@ class TestPostV1Account:
     ])
 
     @allure.title('Проверка 3 негативных сценариев')
-    def test_post_v1_account_negative(self, account_helper, login, email, password, expected_status_code):
-        registration = Registration(
-            login=login,
-            email=email,
-            password=password
-        )
-
+    @allure.title('Проверка 3 негативных сценариев')
+    def test_post_v1_account_negative(
+            self,
+            account_helper,
+            login,
+            email,
+            password,
+            expected_status_code
+            ):
         with check_status_code_http(expected_status_code):
-            account_helper.dm_account_api.account_api.post_v1_account(registration=registration)
+            account_helper.register_new_user(login=login, password=password, email=email)

@@ -35,16 +35,13 @@ class AccountHelper:
         )
         response = self.dm_account_api.account_api.post_v1_account(registration=registration)
         start_time = time.time()
-        with allure.step('Получение письма с токеном'):
-            response = self.mailhog.mailhog_api.get_api_v2_messages()
+        response = self.mailhog.mailhog_api.get_api_v2_messages()
         end_time = time.time()
         assert end_time - start_time < 5, 'Время ожидания активации превышено'
         assert response.status_code == 200, "Письма не были получены"
-        with allure.step('Получение токена активации'):
-            token = self.get_activation_token_by_login(login=login, response=response)
+        token = self.get_activation_token_by_login(login=login, response=response)
         assert token, f'Не найден токен активации для {login}'
-        with allure.step('Активируем токен'):
-            response = self.dm_account_api.account_api.put_v1_account_token(token=token)
+        response = self.dm_account_api.account_api.put_v1_account_token(token=token)
         return response
 
     @allure.step('Авторизация пользователя')
@@ -98,12 +95,10 @@ class AccountHelper:
         )
         response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
 
-        with allure.step('Запрос на получение писем'):
-            response = self.mailhog.mailhog_api.get_api_v2_messages()
+        response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, "Письма не были получены после смены email"
 
-        with allure.step('Подтверждение нового email'):
-            new_token = self.get_activation_token_by_login(login=login, response=response)
+        new_token = self.get_activation_token_by_login(login=login, response=response)
         assert new_token, 'Не найден токен активации для нового email'
         self.dm_account_api.account_api.put_v1_account_token(token=new_token)
 
@@ -115,22 +110,19 @@ class AccountHelper:
             new_password: str,
             email: str
         ):
-        with allure.step('Получение токена авторизации'):
-            response = self.user_login(login=login, password=password)
+        response = self.user_login(login=login, password=password)
         auth_token = response.headers['x-dm-auth-token']
         assert auth_token, 'Токен авторизации не получен'
 
 
-        with allure.step('Сбрасываем пароль'):
-            response = self.dm_account_api.account_api.post_v1_account_password(
-            reset_password=ResetPassword(
-                login=login,
-                email=email
-            )
-        )
+        response = self.dm_account_api.account_api.post_v1_account_password(
+        reset_password=ResetPassword(
+            login=login,
+            email=email
+         )
+     )
 
-        with allure.step('Получаем токен сброса из письма'):
-            response = self.mailhog.mailhog_api.get_api_v2_messages()
+        response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, "Письма не были получены после смены email"
         token = self.get_activation_token_by_login(login=login, response=response)
         assert token, 'Не найден токен активации для нового email'
@@ -142,8 +134,7 @@ class AccountHelper:
             newPassword=new_password
         )
 
-        with allure.step('Меняем пароль'):
-            response = self.dm_account_api.account_api.put_v1_account_password(
+        response = self.dm_account_api.account_api.put_v1_account_password(
             change_password=change_password,
             token=auth_token
         )

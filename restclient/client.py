@@ -36,7 +36,7 @@ class RestClient:
     ):
         return self._send_request(method='POST', path=path, **kwargs)
 
-    @allure_attach
+
     def get(
             self,
             path,
@@ -44,7 +44,7 @@ class RestClient:
     ):
         return self._send_request(method='GET', path=path, **kwargs)
 
-    @allure_attach
+
     def put(
             self,
             path,
