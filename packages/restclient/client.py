@@ -5,11 +5,10 @@ from requests import JSONDecodeError
 import structlog
 from requests import session
 from swagger_coverage_py.configs import IS_DISABLED
-from swagger_coverage_py.listener import CoverageListener
 from swagger_coverage_py.request_schema_handler import RequestSchemaHandler
 from swagger_coverage_py.uri import URI
-from restclient.configuration import Configuration
-from restclient.utilities import allure_attach
+from packages.restclient.configuration import Configuration
+from packages.restclient.utilities import allure_attach
 
 
 class RestClient:

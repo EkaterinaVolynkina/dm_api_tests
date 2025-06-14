@@ -11,7 +11,7 @@ from hamcrest import (
     equal_to,
 )
 
-from dm_api_account.models.user_envelope import UserEnvelope
+from client.http.dm_api_account.models.user_envelope import UserEnvelope
 
 
 class PostV1Account:
