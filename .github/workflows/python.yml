@@ -38,7 +38,7 @@ jobs:
       - name: Generate Swagger Coverage Report
         if: ${{ always() }}
         run: |
-          java -cp "venv/lib/python3.10/site-packages/swagger_coverage_py/swagger-coverage-commandline/lib/*" \
+          java -cp "venv/lib/python3.10/site-packages/swagger_coverage_py/swagger-coverage-commandline/lib/swagger-coverage-commandline-1.0-SNAPSHOT.jar" \
           com.github.viclovsky.swagger.coverage.CommandLine \
           -s swagger-doc-dm-api-account.json \
           -i swagger-coverage-output \
