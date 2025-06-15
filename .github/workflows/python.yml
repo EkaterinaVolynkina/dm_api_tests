@@ -39,7 +39,7 @@ jobs:
         run: |
             export SWAGGER_COVERAGE_OUTPUT=swagger-coverage-output
             DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
-          continue-on-error: true
+        continue-on-error: true
 
       - name: Debug swagger-coverage output
         if: ${{ always() }}
