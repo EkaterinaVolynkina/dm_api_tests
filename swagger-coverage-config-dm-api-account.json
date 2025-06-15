@@ -2,8 +2,7 @@
     "rules": {
         "status": {
             "enable": true,
-            "ignore": [
-            ],
+            "ignore": [],
             "filter": []
         },
         "paths": {
@@ -20,7 +19,7 @@
     "writers": {
         "html": {
             "locale": "en",
-            "filename": "swagger-coverage-report-dm-api-account.html"
+            "filename": "swagger-coverage-dm-api-account.html"
         }
     }
 }
