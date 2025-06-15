@@ -3,8 +3,8 @@ from pathlib import Path
 from telebot import TeleBot
 from vyper import v
 
-
-config = Path(__file__).resolve().parent.parent.parent / 'config'
+config = Path(__file__).parent.joinpath('../../').joinpath('config')
+#config = Path(__file__).resolve().parent.parent.parent / 'config'
 v.set_config_name('prod')
 print(config)
 print(config.is_dir())

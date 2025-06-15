@@ -31,16 +31,17 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests and generate swagger-coverage
+        continue-on-error: true
         run: |
+          export JAVA_HOME=$JAVA_HOME\
           export SWAGGER_COVERAGE_OUTPUT=swagger-coverage-output
           DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
-        continue-on-error: true
 
-      - name: Debug swagger-coverage output
-        if: ${{ always() }}
+      - name: Run Coverage
+        if: ${{ always()}}
         run: |
-          echo "Files in swagger-coverage-output:"
-          ls -la swagger-coverage-output || echo "No output found"
+          python -m packages.notifier.bot
+          
 
       - name: Generate Swagger Coverage Report
         if: ${{ always() }}
