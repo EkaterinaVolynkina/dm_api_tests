@@ -47,7 +47,7 @@ jobs:
       - name: Move Swagger Report to Bot Directory
         if: ${{ always() }}
         run: |
-          mv swagger-coverage-dm-api-account.html packages/notifier/
+#          mv swagger-coverage-dm-api-account.html packages/notifier/
 
       - name: Run Coverage Bot
         if: ${{ always() }}
