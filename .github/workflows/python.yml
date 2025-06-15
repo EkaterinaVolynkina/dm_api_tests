@@ -38,18 +38,17 @@ jobs:
       - name: Generate Swagger Coverage Report
         if: ${{ always() }}
         run: |
-          SWAGGER_LIB_DIR="venv/lib/python3.10/site-packages/swagger_coverage_py/swagger-coverage-commandline/lib"
-          echo "Swagger lib dir: $SWAGGER_LIB_DIR"
-          ls $SWAGGER_LIB_DIR
+          LIB_DIR=$(python -c "import swagger_coverage_py, os; print(os.path.join(os.path.dirname(swagger_coverage_py.__file__), 'swagger-coverage-commandline', 'lib'))")
+          echo "Swagger lib dir: $LIB_DIR"
+          ls "$LIB_DIR"
 
-          # Формируем classpath со всеми .jar
-          CLASSPATH=$(echo $SWAGGER_LIB_DIR/*.jar | tr ' ' ':')
+          CLASSPATH=$(echo "$LIB_DIR"/*.jar | tr ' ' ':')
 
           java -cp "$CLASSPATH" \
-          com.github.viclovsky.swagger.coverage.CommandLine \
-          -s swagger-doc-dm-api-account.json \
-          -i swagger-coverage-output \
-          -c swagger-coverage-config-dm-api-account.json
+            com.github.viclovsky.swagger.coverage.CommandLine \
+            -s swagger-doc-dm-api-account.json \
+            -i swagger-coverage-output \
+            -c swagger-coverage-config-dm-api-account.json
 
       - name: Move Swagger Report to Bot Directory
         if: ${{ always() }}
