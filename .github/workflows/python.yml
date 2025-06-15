@@ -27,7 +27,7 @@ jobs:
 
       - name: Run tests
         run: |
-          DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings -s -vv
+          pytest ./tests --alluredir=allure-results --disable-warnings
         continue-on-error: true
 
       - name: Archive allure results

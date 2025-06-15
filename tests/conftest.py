@@ -38,11 +38,16 @@ options = (
 @pytest.fixture(scope="session", autouse=True)
 def setup_swagger_coverage():
     reporter = CoverageReporter(api_name="dm-api-account", host="http://5.63.153.31:5051")
+    reporter.cleanup_input_files()
     reporter.setup("/swagger/Account/swagger.json")
 
     yield
     reporter.generate_report()
-    reporter.cleanup_input_files()
+    print(f"Current working dir: {os.getcwd()}")
+    report_path = Path("swagger-coverage-dm-api-account.html")
+    print(f"Report exists: {report_path.exists()} at {report_path.absolute()}")
+
+
 
 @pytest.fixture(scope='function', autouse=True)
 def set_config(request):
