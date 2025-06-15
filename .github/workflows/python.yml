@@ -35,13 +35,16 @@ jobs:
           DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
         continue-on-error: true
 
-      - name: Generate Swagger Coverage Report (Linux)
+      - name: Generate Swagger Coverage Report
         if: ${{ always() }}
         run: |
           LIB_DIR=$(python -c "import swagger_coverage_py, os; print(os.path.join(os.path.dirname(swagger_coverage_py.__file__), 'swagger-coverage-commandline', 'lib'))")
           echo "Swagger lib dir: $LIB_DIR"
-          ls "$LIB_DIR"
 
+          # Удаляем slf4j-simple из lib директории
+          find "$LIB_DIR" -name "slf4j-simple*.jar" -delete
+
+          # Собираем classpath
           CLASSPATH=$(echo "$LIB_DIR"/*.jar | tr ' ' ':')
 
           java -cp "$CLASSPATH" \
