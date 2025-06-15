@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -27,7 +28,6 @@ jobs:
 
       - name: Set JAVA_HOME
         run: echo "JAVA_HOME=$(dirname $(readlink -f $(which java)))" >> $GITHUB_ENV
-
 
       - name: Install dependencies
         run: |
@@ -40,11 +40,24 @@ jobs:
           pytest ./tests --alluredir=allure-results --disable-warnings
         continue-on-error: true
 
-      - name: Run Coverage
-        if: ${{always()}}
+      - name: Generate Swagger Coverage Report
+        if: ${{ always() }}
+        run: |
+          java -cp "venv/lib/python3.10/site-packages/swagger_coverage_py/swagger-coverage-commandline/lib/*" \
+          com.github.viclovsky.swagger.coverage.CommandLine \
+          -s swagger-doc-dm-api-account.json \
+          -i swagger-coverage-output \
+          -c swagger-coverage-config-dm-api-account.json
+
+      - name: Move swagger report to bot directory
+        if: ${{ always() }}
+        run: |
+          mv swagger-coverage-dm-api-account.html packages/notifier/
+
+      - name: Run Coverage Bot
+        if: ${{ always() }}
         run: |
           python -m packages.notifier.bot
-          
 
       - name: Archive allure results
         uses: actions/upload-artifact@v4
@@ -53,25 +66,6 @@ jobs:
           path: allure-results
           retention-days: 1
 
-  generate-report:
-    runs-on: ubuntu-latest
-    needs: test
-    name: Generate report
-    steps:
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'microsoft'
-          java-version: '17'
-      - run: sudo wget https://github.com/allure-framework/allure2/releases/download/2.29.0/allure-2.29.0.tgz && sudo tar -xvzf allure-2.29.0.tgz -C /opt/ && sudo ln -s /opt/allure-2.29.0/bin/allure /usr/bin/allure
-      - name: Download allure results
-        uses: actions/download-artifact@v4
-      - run: allure generate -c allure-results -o _site
-      - name: Store report
-        uses: actions/upload-artifact@v4
-        with:
-          name: _site
-          path: _site
-          retention-days: 1
 
   publish-report:
     runs-on: ubuntu-latest

@@ -17,7 +17,7 @@ os.environ['TELEGRAM_BOT_ACCESS_TOKEN'] = v.get('telegram.token')
 
 def send_file() -> None:
     telegram_bot = TeleBot(v.get('telegram.token'))
-    file_path = Path(__file__).parent.joinpath('../../').joinpath('swagger-coverage-dm-api-account.html')
+    file_path = Path(__file__).resolve().parent.parent.parent / 'swagger-coverage-dm-api-account.html'
     with open(file_path, 'rb') as document:
         telegram_bot.send_document(
             v.get('telegram.chat_id'),
