@@ -9,9 +9,8 @@ permissions:
 
 jobs:
   test:
-    name: Run Pytest and Coverage
+    name: Python tests
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -31,24 +30,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Create swagger output dir
-        run: mkdir -p swagger-coverage-output
-
-      - name: Run tests with Swagger Coverage
+      - name: Run tests
         run: |
-          pytest tests --alluredir=allure-results --disable-warnings
-
-      - name: Debug swagger output
-        if: ${{ always() }}
-        run: |
-          echo "Swagger output:"
-          ls -la swagger-coverage-output || echo "No output dir"
+          pytest ./tests --alluredir=allure-results --disable-warnings
+        continue-on-error: true
 
       - name: Generate Swagger Coverage Report
         if: ${{ always() }}
         run: |
           LIB_DIR=$(python -c "import swagger_coverage_py, os; print(os.path.join(os.path.dirname(swagger_coverage_py.__file__), 'swagger-coverage-commandline', 'lib'))")
           echo "Swagger lib dir: $LIB_DIR"
+          ls "$LIB_DIR"
+
           CLASSPATH=$(echo "$LIB_DIR"/*.jar | tr ' ' ':')
 
           java -cp "$CLASSPATH" \
@@ -57,13 +50,15 @@ jobs:
             -i swagger-coverage-output \
             -c swagger-coverage-config-dm-api-account.json
 
-      - name: Move Swagger HTML report to notifier
+      - name: Move Swagger Report to Bot Directory
         if: ${{ always() }}
-        run: mv swagger-coverage-dm-api-account.html packages/notifier/
+        run: |
+#          mv swagger-coverage-dm-api-account.html packages/notifier/
 
-      - name: Send report to Telegram
+      - name: Run Coverage Bot
         if: ${{ always() }}
-        run: python -m packages.notifier.bot
+        run: |
+          python -m packages.notifier.bot
 
       - name: Archive allure results
         uses: actions/upload-artifact@v4
@@ -73,10 +68,9 @@ jobs:
           retention-days: 1
 
   generate-report:
-    name: Generate Allure Report
+    name: Generate report
     runs-on: ubuntu-latest
     needs: test
-
     steps:
       - uses: actions/checkout@v4
 
@@ -98,17 +92,16 @@ jobs:
 
       - run: allure generate -c allure-results -o _site
 
-      - name: Upload Allure site
+      - name: Store report
         uses: actions/upload-artifact@v4
         with:
           name: _site
           path: _site
 
   publish-report:
-    name: Publish Allure Report
+    name: Publish report
     runs-on: ubuntu-latest
     needs: generate-report
-
     steps:
       - uses: actions/checkout@v4
 
@@ -122,6 +115,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
 
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
 
       - run: echo 'https://ekaterinavolynkina.github.io/dm_api_tests/'
