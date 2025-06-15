@@ -2,8 +2,7 @@
     "rules": {
         "status": {
             "enable": true,
-            "ignore": [
-            ],
+            "ignore": [],
             "filter": []
         },
         "paths": {

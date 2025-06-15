@@ -27,6 +27,7 @@ class TestPostV1Account:
         ('k', 'email@mail.ru', 'Qwerty123!', 400)
     ])
 
+
     @allure.title('Проверка 3 негативных сценариев')
     @allure.title('Проверка 3 негативных сценариев')
     def test_post_v1_account_negative(
@@ -39,3 +40,4 @@ class TestPostV1Account:
             ):
         with check_status_code_http(expected_status_code):
             account_helper.register_new_user(login=login, password=password, email=email)
+
