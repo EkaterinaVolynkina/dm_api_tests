@@ -1,20 +1,18 @@
 import os
-import shutil
 from collections import namedtuple
 from datetime import datetime
-import random
-import string
 from pathlib import Path
-
-from requests.auth import HTTPBasicAuth
+import swagger_coverage_py
 from swagger_coverage_py.reporter import CoverageReporter
 from vyper import v
 import pytest
-from restclient.configuration import Configuration as MailHogConfiguration
+import sys
+from packages.notifier.bot import send_file
+from packages.restclient.configuration import Configuration as MailHogConfiguration
 import structlog
 
 from helpers.account_helper import AccountHelper
-from restclient.configuration import Configuration as DmApiConfiguration
+from packages.restclient.configuration import Configuration as DmApiConfiguration
 from services.api_mailhog import MailHogApi
 from services.dm_api_account import DMApiAccount
 
@@ -32,22 +30,20 @@ options = (
     'service.dm_api_account',
     'service.mailhog',
     'user.login',
-    'user.password'
+    'user.password',
+    'telegram.chat_id',
+    'telegram.token'
 )
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_swagger_coverage():
     reporter = CoverageReporter(api_name="dm-api-account", host="http://5.63.153.31:5051")
-    reporter.cleanup_input_files()
     reporter.setup("/swagger/Account/swagger.json")
 
     yield
     reporter.generate_report()
-    print(f"Current working dir: {os.getcwd()}")
-    report_path = Path("swagger-coverage-dm-api-account.html")
-    print(f"Report exists: {report_path.exists()} at {report_path.absolute()}")
-
-
+    reporter.cleanup_input_files()
+    send_file()
 
 @pytest.fixture(scope='function', autouse=True)
 def set_config(request):
@@ -58,6 +54,13 @@ def set_config(request):
     v.read_in_config()
     for option in options:
         v.set(f'{option}', request.config.getoption(f'--{option}'))
+    os.environ['TELEGRAM_BOT_CHAT_ID'] = v.get('telegram.chat_id')
+    os.environ['TELEGRAM_BOT_ACCESS_TOKEN'] = v.get('telegram.token')
+    request.config.stash['telegram-notifier-addfields']['environment'] = config_name
+    request.config.stash['telegram-notifier-addfields']['report'] = 'https://ekaterinavolynkina.github.io/dm_api_tests/'
+
+
+
 
 
 def pytest_addoption(
@@ -104,13 +107,10 @@ def auth_account_helper(mailhog_api):
 
 @pytest.fixture
 def prepare_user():
-
-    now = datetime.now()
-    data = now.strftime('%d_%m_%Y_%H_%M_%S_%f')[:-3]
-    login = f'Katya{data}'
-    password = '123456789'
+    now = datetime.now().strftime('%d%m%Y_%H%M%S%f')[:-3]
+    login = f'Katya_{now}'[:30]
+    password = v.get('user.password')
     email = f'{login}@mail.ru'
     User = namedtuple('User', ['login', 'password', 'email'])
     user = User(login=login, password=password, email=email)
     return user
-

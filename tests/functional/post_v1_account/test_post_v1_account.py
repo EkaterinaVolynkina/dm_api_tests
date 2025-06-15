@@ -2,7 +2,7 @@ import allure
 import pytest
 
 from checkers.http_checkers import check_status_code_http
-from dm_api_account.models.registration import Registration
+
 
 @allure.suite('Тесты на проверку метода POST v1/account')
 @allure.sub_suite('Позитивные тесты')

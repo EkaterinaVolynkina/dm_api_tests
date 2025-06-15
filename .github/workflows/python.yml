@@ -7,7 +7,6 @@ permissions:
   pages: write
   id-token: write
 
-
 jobs:
   test:
     name: Python tests
@@ -20,15 +19,43 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run tests
-        run: |
-          pytest ./tests --alluredir=allure-results --disable-warnings
         continue-on-error: true
+        run: |
+          export JAVA_HOME=$JAVA_HOME\
+          DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
+
+      - name: Run Coverage
+        if: ${{ always()}}
+        run: |
+          python -m packages.notifier.bot
+          
+
+      - name: Generate Swagger Coverage Report
+        if: ${{ always() }}
+        run: |
+          LIB_DIR=$(python -c "import swagger_coverage_py, os; print(os.path.join(os.path.dirname(swagger_coverage_py.__file__), 'swagger-coverage-commandline', 'lib'))")
+          echo "Swagger lib dir: $LIB_DIR"
+          find "$LIB_DIR" -name "slf4j-simple*.jar" -delete  # удаляем конфликт логгера
+          CLASSPATH=$(echo "$LIB_DIR"/*.jar | tr ' ' ':')
+
+          java -cp "$CLASSPATH" \
+            com.github.viclovsky.swagger.coverage.CommandLine \
+            -s swagger-doc-dm-api-account.json \
+            -i swagger-coverage-output \
+            -c swagger-coverage-config-dm-api-account.json
+
 
       - name: Archive allure results
         uses: actions/upload-artifact@v4
@@ -37,37 +64,71 @@ jobs:
           path: allure-results
           retention-days: 1
 
-  generate-report:
-    runs-on: ubuntu-latest
+  run-bat:
+    name: Run swagger-coverage-commandline.bat on Windows
+    runs-on: windows-latest
     needs: test
-    name: Generate report
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java on Windows
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
+      - name: Run swagger-coverage-commandline.bat
+        run: .\swagger-coverage-commandline.bat -s swagger-doc-dm-api-account.json -i swagger-coverage-output -c swagger-coverage-config-dm-api-account.json
+
+  generate-report:
+    name: Generate report
+    runs-on: ubuntu-latest
+    needs: [test, run-bat]
+    steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: 'microsoft'
           java-version: '17'
-      - run: sudo wget https://github.com/allure-framework/allure2/releases/download/2.29.0/allure-2.29.0.tgz && sudo tar -xvzf allure-2.29.0.tgz -C /opt/ && sudo ln -s /opt/allure-2.29.0/bin/allure /usr/bin/allure
+
+      - run: |
+          sudo wget https://github.com/allure-framework/allure2/releases/download/2.29.0/allure-2.29.0.tgz
+          sudo tar -xvzf allure-2.29.0.tgz -C /opt/
+          sudo ln -s /opt/allure-2.29.0/bin/allure /usr/bin/allure
+
       - name: Download allure results
         uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+
       - run: allure generate -c allure-results -o _site
+
       - name: Store report
         uses: actions/upload-artifact@v4
         with:
           name: _site
           path: _site
-          retention-days: 1
 
   publish-report:
+    name: Publish report
     runs-on: ubuntu-latest
     needs: generate-report
-    name: Publish report
     steps:
       - uses: actions/checkout@v4
+
       - name: Download site report
         uses: actions/download-artifact@v4
+        with:
+          name: _site
+          path: _site
+
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
       - run: echo 'https://ekaterinavolynkina.github.io/dm_api_tests/'

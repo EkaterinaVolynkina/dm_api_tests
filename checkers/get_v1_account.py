@@ -1,5 +1,4 @@
 from datetime import datetime
-from dm_api_account.models.user_details_envelope import UserRole
 from assertpy import assert_that as assertpy_that, soft_assertions
 from hamcrest import (
     assert_that,
@@ -12,8 +11,8 @@ from hamcrest import (
     equal_to,
 )
 
-from dm_api_account.models.user_details_envelope import UserDetailsEnvelope
-from dm_api_account.models.user_envelope import UserRole
+from client.http.dm_api_account.models.user_details_envelope import UserDetailsEnvelope
+from client.http.dm_api_account.models.user_envelope import UserRole
 
 
 class GetV1Account:
