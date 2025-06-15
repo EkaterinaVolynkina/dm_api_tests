@@ -2,7 +2,7 @@ import os
 from collections import namedtuple
 from datetime import datetime
 from pathlib import Path
-
+import swagger_coverage_py
 from swagger_coverage_py.reporter import CoverageReporter
 from vyper import v
 import pytest
