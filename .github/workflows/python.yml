@@ -35,7 +35,7 @@ jobs:
           DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
         continue-on-error: true
 
-      - name: Generate Swagger Coverage Report
+      - name: Generate Swagger Coverage Report (Linux)
         if: ${{ always() }}
         run: |
           LIB_DIR=$(python -c "import swagger_coverage_py, os; print(os.path.join(os.path.dirname(swagger_coverage_py.__file__), 'swagger-coverage-commandline', 'lib'))")
@@ -67,10 +67,26 @@ jobs:
           path: allure-results
           retention-days: 1
 
+  run-bat:
+    name: Run swagger-coverage-commandline.bat on Windows
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java on Windows
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
+      - name: Run swagger-coverage-commandline.bat
+        run: .\swagger-coverage-commandline.bat -s swagger-doc-dm-api-account.json -i swagger-coverage-output -c swagger-coverage-config-dm-api-account.json
+
   generate-report:
     name: Generate report
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, run-bat]
     steps:
       - uses: actions/checkout@v4
 
