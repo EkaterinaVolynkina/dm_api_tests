@@ -35,11 +35,11 @@ jobs:
           DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
         continue-on-error: true
 
-      - name: Run tests
+      - name: Run tests and generate swagger-coverage
         run: |
-          export SWAGGER_COVERAGE_OUTPUT=swagger-coverage-output
-          DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
-        continue-on-error: true
+            export SWAGGER_COVERAGE_OUTPUT=swagger-coverage-output
+            DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
+          continue-on-error: true
 
       - name: Debug swagger-coverage output
         if: ${{ always() }}
@@ -52,7 +52,7 @@ jobs:
         run: |
           LIB_DIR=$(python -c "import swagger_coverage_py, os; print(os.path.join(os.path.dirname(swagger_coverage_py.__file__), 'swagger-coverage-commandline', 'lib'))")
           echo "Swagger lib dir: $LIB_DIR"
-          find "$LIB_DIR" -name "logback-classic*.jar" -delete  # удаляем конфликт логгера
+          find "$LIB_DIR" -name "slf4j-simple*.jar" -delete  # удаляем конфликт логгера
           CLASSPATH=$(echo "$LIB_DIR"/*.jar | tr ' ' ':')
 
           java -cp "$CLASSPATH" \
