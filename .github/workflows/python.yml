@@ -32,7 +32,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest ./tests --alluredir=allure-results --disable-warnings
+          DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
         continue-on-error: true
 
       - name: Generate Swagger Coverage Report

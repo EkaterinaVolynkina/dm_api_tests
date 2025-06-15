@@ -6,7 +6,7 @@ import swagger_coverage_py
 from swagger_coverage_py.reporter import CoverageReporter
 from vyper import v
 import pytest
-
+import sys
 from packages.notifier.bot import send_file
 from packages.restclient.configuration import Configuration as MailHogConfiguration
 import structlog
@@ -114,4 +114,11 @@ def prepare_user():
     User = namedtuple('User', ['login', 'password', 'email'])
     user = User(login=login, password=password, email=email)
     return user
-
+def pytest_sessionfinish(session, exitstatus):
+    coverage_dir = "swagger-coverage-output"
+    if not os.path.isdir(coverage_dir):
+        print(f"ERROR: Coverage directory {coverage_dir} does not exist.", file=sys.stderr)
+        sys.exit(1)
+    json_files = [f for f in os.listdir(coverage_dir) if f.endswith('.json')]
+    if not json_files:
+        print(f"WARNING: No coverage JSON files found in {coverage_dir}.", file=sys.stderr)
