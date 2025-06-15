@@ -35,16 +35,24 @@ jobs:
           DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
         continue-on-error: true
 
+      - name: Run tests
+        run: |
+          export SWAGGER_COVERAGE_OUTPUT=swagger-coverage-output
+          DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
+        continue-on-error: true
+
+      - name: Debug swagger-coverage output
+        if: ${{ always() }}
+        run: |
+          echo "Files in swagger-coverage-output:"
+          ls -la swagger-coverage-output || echo "No output found"
+
       - name: Generate Swagger Coverage Report
         if: ${{ always() }}
         run: |
           LIB_DIR=$(python -c "import swagger_coverage_py, os; print(os.path.join(os.path.dirname(swagger_coverage_py.__file__), 'swagger-coverage-commandline', 'lib'))")
           echo "Swagger lib dir: $LIB_DIR"
-
-          # Удаляем slf4j-simple из lib директории
-          find "$LIB_DIR" -name "slf4j-simple*.jar" -delete
-
-          # Собираем classpath
+          find "$LIB_DIR" -name "logback-classic*.jar" -delete  # удаляем конфликт логгера
           CLASSPATH=$(echo "$LIB_DIR"/*.jar | tr ' ' ':')
 
           java -cp "$CLASSPATH" \
