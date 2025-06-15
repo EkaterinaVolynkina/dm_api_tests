@@ -30,11 +30,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests and generate swagger-coverage
+      - name: Run tests
         continue-on-error: true
         run: |
           export JAVA_HOME=$JAVA_HOME\
-          export SWAGGER_COVERAGE_OUTPUT=swagger-coverage-output
           DEBUG_MODE=true pytest ./tests --alluredir=allure-results --disable-warnings
 
       - name: Run Coverage
@@ -57,15 +56,6 @@ jobs:
             -i swagger-coverage-output \
             -c swagger-coverage-config-dm-api-account.json
 
-      - name: Move Swagger Report to Bot Directory
-        if: ${{ always() }}
-        run: |
-#          mv swagger-coverage-dm-api-account.html packages/notifier/
-
-      - name: Run Coverage Bot
-        if: ${{ always() }}
-        run: |
-          python -m packages.notifier.bot
 
       - name: Archive allure results
         uses: actions/upload-artifact@v4

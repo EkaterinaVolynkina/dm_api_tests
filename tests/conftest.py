@@ -43,7 +43,7 @@ def setup_swagger_coverage():
     yield
     reporter.generate_report()
     reporter.cleanup_input_files()
-    #send_file()
+    send_file()
 
 @pytest.fixture(scope='function', autouse=True)
 def set_config(request):
